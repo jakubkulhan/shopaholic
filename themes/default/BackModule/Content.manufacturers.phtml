@@ -1,0 +1,22 @@
+{if !empty($manufacturers)}
+    {foreach $manufacturers as $_}
+        <div class="row manufacturer">
+            <div class="column grid-10">
+                <h2>{$_->getName()}</h2>
+                {$_->getDescription()|truncate:512}
+            </div>
+            <div class="column grid-2 controls">
+                {if $_->getPicture() !== NULL && $_->getPicture()->getThumbnail() !== NULL}
+                    <img src="{=Environment::expand('%mediaBaseUri%/' . $_->getPicture()->getThumbnail()->getFile())}" alt="{$_->getName()}"><br>
+                {/if}
+                <a href="{link Content:editManufacturer, $_->getNiceName()}">✎&nbsp;{=__('Edit')}</a>
+                <a href="{link Content:deleteManufacturer, $_->getNiceName()}" onclick="return confirm('{!=__('Do you really want to delete this manufacturer?')}');">⊗&nbsp;{=__('Delete')}</a>
+            </div>
+        </div>
+    {/foreach}
+{else}
+    <p style="text-align: center; border-bottom: solid #eee 1px; padding: 30px;" class="warning">{=__('There are no manufacturers.')}</p>
+{/if}
+<div class="controls" style="text-align: center; font-size: 150%; padding: 20px;">
+    <a href="{link Content:addManufacturer}">⊕&nbsp;{=__('Add')}</a>
+</div>

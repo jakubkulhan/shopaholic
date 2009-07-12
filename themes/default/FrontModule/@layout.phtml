@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>{if isset($title)}{$title} | {/if}{=Environment::expand('%shopName%')}</title>
+        <meta name="description" content="{if isset($page) && $page !== NULL && $page->getMetaDescription() !== NULL}{$page->getMetaDescription()}{else}{=Environment::expand('%metaDescription%')}{/if}">
+        <meta name="keywords" content="{if isset($page) && $page !== NULL && $page->getMetaKeywords() !== NULL}{$page->getMetaKeywords()}{else}{=Environment::expand('%metaKeywords%')}{/if}">
+        <link rel="stylesheet" type="text/css" href="{=Environment::expand('%themeBaseUri%/style.css')}">
+    </head>
+    <body>
+        <div id="page">
+
+            <div class="row">
+                <div id="header" class="column grid-12">
+                    <h1><a href="{link Show:default}">{=Environment::expand('%shopName%')}</a></h1>
+                    <h2>{=Environment::expand('%shopSlogan%')}</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div id="side" class="column grid-3">
+                    <h2>{=__('My')}</h2>
+                    <ul>
+                    {if !($presenter instanceof Front_OrderPresenter && $presenter->getView() === 'showCart')}
+                        {if isset($side->cart->products) && !empty($side->cart->products)}
+                            <li><p>{=__('Cart total')} <b>{if isset($side->cart->total)}{$side->cart->total}{else}0{/if}&thinsp;{=Environment::expand('%currency%')}</b></p></li>
+                            <li><a href="{link Order:showCart}" rel="nofollow">{=__('Show cart')}</a></li>
+                        {else}
+                            <li><p>{=__('The cart is empty')}</p></li>
+                        {/if}
+                    {/if}
+                    {if !($presenter instanceof Front_OrderPresenter && $presenter->getView() === 'fillData') && isset($side->cart->products) && !empty($side->cart->products)}
+                        <li><a href="{link Order:fillData}" rel="nofollow">{if isset($side->cart->data) && !empty($side->cart->data)}{=__('Change order data')}{else}{=__('Fill order data')}{/if}</a></li>
+                    {/if}
+                    {if !($presenter instanceof Front_OrderPresenter && $presenter->getView() === 'complete') && isset($side->cart->products) && !empty($side->cart->products) && isset($side->cart->data) && !empty($side->cart->data)}
+                        <li><a href="{link Order:complete}" rel="nofollow">{=__('Complete order')}</a></li>
+                    {/if}
+                    </ul>
+                    {if $presenter instanceof Front_ShowPresenter && $presenter->getView() === 'product'}
+                    <ul>
+                        <li><p>{=__('%d pcs of this product in cart', isset($side->cart->products[$product->getId()]) ? $side->cart->products[$product->getId()] : 0)}</p></li>
+                        <li>
+                            <form method="post" action="{link Order:add}">
+                                <p><input type="hidden" name="product_id" value="{$product->getId()}">
+                                <input type="text" name="amount" value="1" size="1">&thinsp;{=__('pcs')}
+                                <input type="submit" value="{=__('into the cart')}"></p>
+                            </form>
+                        </li>
+                        {if isset($side->cart->products[$product->getId()]) && $side->cart->products[$product->getId()] > 0}
+                            <li>
+                                <form method="post" action="{link Order:delete}">
+                                    <p><input type="hidden" name="product_id" value="{$product->getId()}">
+                                    <input type="text" name="amount" value="{$side->cart->products[$product->getId()]}" size="1">&thinsp;{=__('pcs')}
+                                    <input type="submit" value="{=__('out of the cart')}"></p>
+                                </form>
+                            </li>
+                        {/if}
+                    </ul>
+                    {/if}
+                    {if !empty($side->categories)}
+                    <h2>{=__('Categories')}</h2>
+                    <ul>
+                    {foreach $side->categories as $_}
+                        <li><a href="{link Show:default, $_->getNiceName()}">{=$_->getName()}</a></li>
+                    {/foreach}
+                    </ul>
+                    {/if}
+                    {if !empty($side->manufacturers)}
+                    <h2>{=__('Manufacturers')}</h2>
+                    <ul>
+                    {foreach $side->manufacturers as $_}
+                        <li><a href="{link Show:default, $_->getNiceName()}">{=$_->getName()}</a></li>
+                    {/foreach}
+                    </ul>
+                    {/if}
+                    {if !empty($side->pages)}
+                    <h2>{=__('Pages')}</h2>
+                    <ul>
+                    {foreach $side->pages as $_}
+                        <li><a href="{link Show:default, $_->getNiceName()}">{=$_->getName()}</a></li>
+                    {/foreach}
+                    </ul>
+                    {/if}
+                </div>
+                <div id="main" class="column grid-9">
+                    <?php echo $content->render(); ?>
+                </div>
+            </div>
+            <div class="row">
+                <div id="footer" class="column grid-12">
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

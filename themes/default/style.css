@@ -1,0 +1,363 @@
+/***** CSS RESET *****/
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, font, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	font-size: 100%;
+	vertical-align: baseline;
+	background: transparent;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+:focus {
+	outline: 0;
+}
+ins {
+	text-decoration: none;
+}
+del {
+	text-decoration: line-through;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/****** The 1Kb Grid *****/
+
+.grid-1 { width:60px; }
+.grid-2 { width:140px; }
+.grid-3 { width:220px; }
+.grid-4 { width:300px; }
+.grid-5 { width:380px; }
+.grid-6 { width:460px; }
+.grid-7 { width:540px; }
+.grid-8 { width:620px; }
+.grid-9 { width:700px; }
+.grid-10 { width:780px; }
+.grid-11 { width:860px; }
+.grid-12 { width:940px; }
+
+.column {
+	margin: 0 10px;
+	overflow: hidden;
+	float: left;
+	display: inline;
+}
+.row {
+	width: 960px;
+	margin: 0 auto;
+	overflow: hidden;
+}
+.row .row {
+	margin: 0 -10px;
+	width: auto;
+	display: inline-block;
+}
+
+/***** STYLES *******/
+body {
+    padding: 32px;
+    text-align: center;
+    background: url('img/pattern.png');
+    font-family: sans-serif;
+    font-size: small;
+}
+a {
+    color: #91417D;
+}
+#page {
+    width: 960px;
+    margin: 0 auto;
+    padding: 10px 0;
+    text-align: left;
+    background: white;
+}
+h1, h2, h3, h4, h5, h6 {
+    color: #91417D;
+    font-family: "Trebuchet MS", serif;
+    font-variant: small-caps;
+}
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
+    text-decoration: none;
+}
+h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
+    text-decoration: underline;
+}
+#header, #header h1, #header h1 a, #header h2 {
+    background: #91417D;
+    color: white;
+    text-decoration: none;
+}
+#header h1, #header h2 {
+    margin: 0;
+}
+#header h1 {
+    padding: 20px 25px 0 25px;
+    font-size: 200%;
+}
+#header h2 {
+    padding: 0 25px 20px 50px;
+    font-size: 120%;
+    font-style: italic;
+    font-weight: normal;
+}
+h1 {
+    font-size: 180%;
+}
+h2 {
+    font-size: 150%;
+}
+h3 {
+    font-size: 120%;
+}
+h4 {
+    font-size: 110%;
+}
+h5 {
+    font-size: 100%;
+}
+h6 {
+    font-size: 100%;
+    font-style: italic;
+}
+h1, h2, h3, h4, h5, h6 {
+    margin: 1em 0 0.5em 0;
+}
+p {
+    margin: 0.5em 0 1em 0;
+    line-height: 1.5;
+}
+#main, #side {
+    padding: 10px 0;
+}
+#main h1:first-child, #side h1:first-child,
+#main h2:first-child, #side h2:first-child,
+#main h3:first-child, #side h3:first-child,
+#main h4:first-child, #side h4:first-child,
+#main h5:first-child, #side h5:first-child,
+#main h6:first-child, #side h6:first-child {
+    margin-top: 0;
+}
+#side ul {
+    margin: 0 0 20px 0;
+}
+#side ul li {
+    display: block;
+    background: #91417D;
+}
+#side ul li a, #side ul li p {
+    display: block;
+    margin: 0;
+    padding: 10px;
+    background: #91417D;
+    color: white;
+    text-decoration: none;
+    text-align: left;
+    font-variant: small-caps;
+}
+#side ul li a:after, #side ul li form p:after {
+    content: " »";
+}
+#side ul li a:hover, #side ul li form p:hover {
+    color: #91417D;
+    background: #ffeafa;
+    text-align: right;
+}
+#side ul li a:hover:after {
+    font-weight: bold;
+}
+#side ul li p {
+    text-align: right;
+}
+#side ul li form p {
+    text-align: left;
+}
+#side ul li form input {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    color: inherit;
+    border: none;
+    font-size: inherit;
+    font-variant: inherit;
+    text-align: right;
+    cursor: pointer;
+    cursor: hand;
+}
+#side ul li form input[type=text] {
+    border-bottom: dotted white 1px;
+}
+#side ul li:hover form input[type=text] {
+    border-bottom-color: #91417D;
+}
+#cart {
+    padding: 10px;
+    background: #91417D;
+    color: white;
+    text-align: right;
+}
+#cart a {
+    color: white;
+}
+#cart a:hover {
+    text-decoration: none;
+}
+#cart a:hover span {
+    font-weight: bold;
+}
+#cart p {
+    margin: 0;
+}
+#cart-total, hr, #products, #order-total, #other-items {
+    padding: 10px 0;
+    border: 0;
+    border-top: #c0c0c0 solid 1px;
+}
+#cart-total, #order-total {
+    font-size: 120%;
+}
+#cart-total .grid-7, #order-total .grid-7 {
+    text-align: right;
+    font-weight: bold;
+    font-variant: small-caps;
+}
+#cart-total {
+    text-align: right;
+}
+.product h2 {
+    margin-top: 0;
+}
+#footer {
+    text-align: center;
+    font-size: 70%;
+}
+fieldset {
+    padding: 10px;
+    border: solid #91417D 1px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+}
+legend {
+    color: #91417D;
+    background: white;
+    margin: 0 10px;
+    padding: 10px;
+}
+form table {
+    width: 100%;
+}
+form th {
+    width: 25%;
+    vertical-align: middle;
+}
+form td {
+    width: 75%;
+}
+table.address td {
+    padding: 3px 5px;
+}
+#addresses {
+    margin-bottom: 20px;
+}
+a.next, input[type=submit], #pagination a {
+    display: inline-block;
+    margin: 5px;
+    padding: 5px;
+    text-decoration: none;
+    background: #91417D;
+    color: white;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    border: solid #91417D 1px;
+}
+a.next:hover, input[type=submit]:hover, #pagination a:hover, #pagination strong {
+    color: #91417D;
+    background: white;
+    cursor: hand;
+    cursor: pointer;
+}
+.product {
+    margin-bottom: 20px;
+}
+.product h2 {
+    font-size: 100%;
+    height: 36px;
+    padding: 3px;
+}
+.product .description {
+    height: 120px;
+}
+.product .availability {
+    text-align: left;
+}
+.product .code {
+    line-height: 1.5;
+    font-size: 75%;
+    text-align: center;
+}
+.product .price {
+    text-align: right;
+}
+.cart {
+    width: 100%;
+}
+.cart th, .cart td {
+    padding: 5px;
+}
+.cart tr {
+    border-bottom: solid #eee 1px;
+}
+.cart form {
+    display: inline;
+    color: #91417D;
+}
+.cart form:hover {
+    border-bottom: solid #91417D 1px;
+}
+.cart input {
+    margin: 0;
+    padding: 0;
+    font-family: inherit;
+    font-size: inherit;
+    border: none;
+    background: transparent;
+    color: inherit;
+    text-align: right;
+}
+.cart input[type=text] {
+    border-bottom: dotted #91417D 1px;
+}
+.cart input:hover {
+    background: transparent;
+    color: inherit;
+}
+.cart .total, .cart .price, .cart .amount {
+    text-align: right;
+}
+#pagination {
+    text-align: center;
+}

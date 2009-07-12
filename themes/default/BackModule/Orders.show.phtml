@@ -1,0 +1,133 @@
+<div id="addresses" class="row">
+    <div class="column grid-4">
+        <h2>{=__('Supplier')}</h2>
+        <table class="address">
+            <tr>
+                <td>&nbsp;</td>
+                <td>{=Environment::expand('%shopAddressCompany%')}</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>{=Environment::expand('%shopAddressName%')}</td>
+            </tr>
+                <td>&nbsp;</td>
+                <td>{=Environment::expand('%shopAddressStreet%')}</td>
+            <tr>
+                <td>{=Environment::expand('%shopAddressPostcode%')}</td>
+                <td>{=Environment::expand('%shopAddressCity%')}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="column grid-4">
+        <h2>{=__('Payer')}</h2>
+        <table class="address">
+            {if $order->getPayerCompany() !== ""}
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>{$order->getPayerCompany()}</td>
+                </tr>
+            {else}
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+            {/if}
+            <tr>
+                <td>&nbsp;</td>
+                <td>{$order->getPayerName()} {$order->getPayerLastname()}</td>
+            </tr>
+                <td>&nbsp;</td>
+                <td>{$order->getPayerStreet()}</td>
+            <tr>
+                <td>{$order->getPayerPostcode()}</td>
+                <td>{$order->getPayerCity()}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="column grid-4">
+        <h2>{=__('Delivery address')}</h2>
+        <table class="address">
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>{$order->getDeliveryName()} {$order->getDeliveryLastname()}</td>
+            </tr>
+                <td>&nbsp;</td>
+                <td>{$order->getDeliveryStreet()}</td>
+            <tr>
+                <td>{$order->getDeliveryPostcode()}</td>
+                <td>{$order->getDeliveryCity()}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="row" style="margin-top: 30px;">
+    <div class="column grid-12">
+        <h2>{=__('Items')}</h2>
+        <table class="summary">
+            <thead>
+                <tr>
+                    <th class="code">{=__('Code')}</th>
+                    <th class="name">{=__('Name')}</th>
+                    <th class="amount">{=__('Amount')}</th>
+                    <th class="price">{=__('Price')}</th>
+                    <th class="total">{=__('Total')}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $total = 0; ?>
+                {foreach $products as $_}
+                <?php $this_total = intval($_->amount) * intval($_->price); $total += $this_total; ?>
+                <tr>
+                    <td class="code">{$_->product->getCode()}</td>
+                    <td class="name">{$_->product->getName()}</td>
+                    <td class="amount">{$_->amount}</td>
+                    <td class="price">{$_->price}&thinsp;{=Environment::expand('%currency%')}</td>
+                    <td class="total">{$this_total}&thinsp;{=Environment::expand('%currency%')}</td>
+                </tr>
+                {/foreach}
+            </tbody>
+            <tfoot>
+                <tr class="delivery-type">
+                    <?php $total += intval($order->getDeliveryType()->getPrice()); ?>
+                    <td class="code">&nbsp</td>
+                    <td class="name" colspan="3">{$order->getDeliveryType()->getName()}</td>
+                    <td class="total">{$order->getDeliveryType()->getPrice()}&thinsp;{=Environment::expand('%currency%')}</td>
+                </tr>
+                <tr class="payment-type">
+                    <?php $total += intval($order->getPaymentType()->getPrice()); ?>
+                    <td class="code">&nbsp</td>
+                    <td class="name" colspan="3">{$order->getPaymentType()->getName()}</td>
+                    <td class="total">{$order->getPaymentType()->getPrice()}&thinsp;{=Environment::expand('%currency%')}</td>
+                </tr>
+                <tr class="total">
+                    <td class="code">&nbsp</td>
+                    <th class="name" colspan="3">{=__('Total')}</th>
+                    <td class="total"><strong>{$total}&thinsp;{=Environment::expand('%currency%')}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+<div id="order-controls" class="row" style="margin-top: 20px;">
+    <div class="column grid-12">
+        <hr>
+        <h2>{=__('Contacts to customer')}</h2>
+        <p><strong>{=__('Phone:')}</strong> {$order->getPhone()}</p>
+        <p><strong>{=__('E-mail:')}</strong> <a href="mailto:{$order->getEmail()}">{$order->getEmail()}</a></p>
+        <hr>
+        {if trim($order->getComment()) !== ""}
+            <h2>{=__('Customer\'s comment')}</h2>
+            {!$order->getComment()|texy}
+            <hr>
+        {/if}
+        <h2>{=__('Change status')}</h2>
+        {!$change_order_status_form}
+        <hr>
+        <h2>{=__('Send e-mail')}</h2>
+        {!$send_mail_form}
+    </div>
+</div>

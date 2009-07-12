@@ -1,0 +1,64 @@
+<div id="addresses" class="row">
+    <div class="column grid-4">
+        <h2>{=__('Payer')}</h2>
+        <table class="address">
+            {if !empty($data['payer_company'])}
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>{$data['payer_company']}</td>
+                </tr>
+            {/if}
+            <tr>
+                <td>&nbsp;</td>
+                <td>{$data['payer_name']} {$data['payer_lastname']}</td>
+            </tr>
+                <td>&nbsp;</td>
+                <td>{$data['payer_street']}</td>
+            <tr>
+                <td>{$data['payer_postcode']}</td>
+                <td>{$data['payer_city']}
+            </tr>
+        </table>
+    </div>
+    <div class="column grid-4">
+        <h2>{=__('Delivery address')}</h2>
+        <table class="address">
+            {if !empty($data['payer_company'])}
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+            {/if}
+            <tr>
+                <td>&nbsp;</td>
+                <td>{$data['delivery_name']} {$data['delivery_lastname']}</td>
+            </tr>
+                <td>&nbsp;</td>
+                <td>{$data['delivery_street']}</td>
+            <tr>
+                <td>{$data['delivery_postcode']}</td>
+                <td>{$data['delivery_city']}
+            </tr>
+        </table>
+    </div>
+</div>
+<div id="products">
+{include '@products.phtml', 'products' => $products, 'product_counts' => $product_counts}
+</div>
+<div id="other-items">
+    <div id="delivery-type" class="row">
+        <div class="column grid-7">{=__('Delivery:')} {$delivery_type->getName()}</div>
+        <div class="column grid-2"><strong>{$delivery_type->getPrice()}&thinsp;{=Environment::expand('%currency%')}</strong></div>
+    </div>
+    <div id="payment-type" class="row">
+        <div class="column grid-7">{=__('Payment:')} {$payment_type->getName()}</div>
+        <div class="column grid-2"><strong>{$payment_type->getPrice()}&thinsp;{=Environment::expand('%currency%')}</strong></div>
+    </div>
+</div>
+<div id="order-total" class="row">
+    <div class="column grid-7">{=__('Total')}</div>
+    <div class="column grid-2"><strong>{=$total}&thinsp;{=Environment::expand('%currency%')}</strong></div>
+</div>
+<div style="text-align: center; padding: 1px;">
+    <a class="next" href="{link Order:commit}">{=__('OK')} »</a>
+</div>

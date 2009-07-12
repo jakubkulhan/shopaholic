@@ -1,0 +1,28 @@
+<div id="nav">
+{foreach $nav as $_}
+    <a href="{link Show:, $_->getNiceName()}">{$_->getName()}</a> »
+{/foreach}
+</div>
+<h1 style="margin-top: 3px;">{$product->getName()}</h1>
+
+<div class="row">
+    <div class="column grid-4">
+    {if $product->getPicture() !== NULL}
+        <img src="{=Environment::expand('%mediaBaseUri%/' . $product->getPicture()->getFile())}" alt="{$product->getName()}">
+    {else}
+        <img src="{=Environment::expand('%themeBaseUri%/img/nopicture-big.png')}" alt="{$product->getName()}">
+    {/if}
+        <p style="text-align: center; font-size: 200%; font-weight: bold; ">{$product->getPrice()}&thinsp;{=Environment::expand('%currency%')}</p>
+        {if $product->getAvailability()}
+            <p style="text-align: center; font-style: italic;">{$product->getAvailability()->getName()}</p>
+        {/if}
+    </div>
+    <div class="column grid-5">
+    {!$product->getMetaDescription()|texy}
+    {if $product->getDescription() != ''}
+        {!$product->getDescription()|texy}
+    {else}
+        {!$product->getName()|texy}
+    {/if}
+    </div>
+</div>

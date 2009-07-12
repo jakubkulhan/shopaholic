@@ -1,0 +1,9 @@
+<ul>
+{foreach $categories as $_}
+    <li>{$_[0]->getName()}
+        {if !empty($_[1])}
+            {include '@categories.phtml', 'categories' => $_[1]}
+        {/if}
+    </li>
+{/foreach}
+</ul>

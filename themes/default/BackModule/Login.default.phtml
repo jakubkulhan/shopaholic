@@ -1,0 +1,17 @@
+{if isset($error)}
+    <p class="error">
+    {if $error->getCode() === IAuthenticator::IDENTITY_NOT_FOUND}
+        {=__('No such user.')}
+    {else}{if $error->getCode() === IAuthenticator::INVALID_CREDENTIAL}
+        {=__('Bad password.')}
+    {else}
+        {=__('Cannot login.')}
+    {/if}{/if}
+    </p>
+{/if}
+
+{if isset($msg)}
+    <p>{$msg}</p>
+{/if}
+
+{!$form}

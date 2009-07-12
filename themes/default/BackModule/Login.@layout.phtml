@@ -1,0 +1,20 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>{=__('Login')}</title>
+        <link rel="stylesheet" type="text/css" href="{=Environment::expand('%themeBaseUri%/admin.css')}">
+        <script type="text/css" src="{=Environment::expand('%themeBaseUri%/js/jquery.js')}"></script>
+        <script type="text/css" src="{=Environment::expand('%themeBaseUri%/js/jquery.lightbox-0.5.js')}"></script>
+    </head>
+    <body>
+        <div id="page">
+            <div class="row">
+                <div id="login-form" class="column grid-12">
+                    <h1>{=__('Login')}</h1>
+                    <?php echo $content->render(); ?>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

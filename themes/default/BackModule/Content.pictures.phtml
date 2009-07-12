@@ -1,0 +1,13 @@
+{if !empty($pictures)}
+    {foreach $pictures as $_}
+    <div class="controls picture">
+        <a class="no-hover" href="{=Environment::expand('%mediaBaseUri%/' . $_->getFile())}"><img src="{=Environment::expand('%mediaBaseUri%/' . $_->getThumbnail()->getFile())}" alt="{$_->getFile()}" title="{$_->getFile()|remove_ext}"></a>
+        <br>
+        <a href="{link deletePicture, $_->getId()}" onclick="return confirm('<?php echo __('Do you really want to delete this picture?'); ?>');">⊗</a>
+    </div>
+    {/foreach}
+    <hr style="clear: both;">
+{else}
+    <p style="text-align: center; border-bottom: solid #eee 1px; padding: 30px; margin-bottom: 20px;" class="warning">{=__('There are no pictures.')}</p>
+{/if}
+{!$form}

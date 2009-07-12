@@ -1,0 +1,32 @@
+<h1>{$category->getName()}</h1>
+{!$category->getDescription()|texy}
+
+{if !empty($subcategories)}
+    <ul>
+    {foreach $subcategories as $_}
+        <li><a href="{link default, $_->getNiceName()}">{$_->getName()}</a></li>
+    {/foreach}
+    </ul>
+{/if}
+{if $category->getPicture()}
+    <img src="{=Environment::expand('%mediaBaseUri%/' . $category->getPicture()->getFile())}" alt="{$category->getName()}" style="float: right; margin: 10px;">
+{/if}
+<hr style="clear: both;">
+{include '@products.phtml', 'products' => $products}
+<hr>
+<div id="pagination">
+{if !$paginator->isFirst()}
+    <a href="{link default, $path, $paginator->getPage() - 1}">«</a>
+{/if}
+{for $i = 1; $i <= $paginator->getPageCount(); ++$i}
+    {if $i === $paginator->getPage()}
+        <strong>{$i}</strong>
+    {else}
+        <a href="{link default, $path, $i}">{$i}</a>
+    {/if}
+{/for}
+{if !$paginator->isLast()}
+    <a href="{link default, $path, $paginator->getPage() + 1}">»</a>
+{/if}
+</div>
+

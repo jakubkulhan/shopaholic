@@ -1,0 +1,26 @@
+{if !empty($orders)}
+    <div class="row order" style="font-weight: bold;">
+        <div class="column grid-2">{=__('Date')}</div>
+        <div class="column grid-4">{=__('Customer')}</div>
+        <div class="column grid-2">{=__('Payment type')}</div>
+        <div class="column grid-2">{=__('Delivery type')}</div>
+        <div class="column grid-2 controls">&nbsp;</div>
+    </div>
+    {foreach $orders as $order}
+        <div class="row order">
+            <div class="column grid-2">
+                {$order->getAt()|date}
+            </div>
+            <div class="column grid-4">
+                {$order->getPayerName()} {$order->getPayerLastname()} &lt;<a href="mailto:{$order->getEmail()}">{$order->getEmail()}</a>&gt;
+            </div>
+            <div class="column grid-2">{$order->getPaymentType()->getName()}</div>
+            <div class="column grid-2">{$order->getDeliveryType()->getName()}</div>
+            <div class="column grid-2 controls">
+                <a href="{link Orders:show, $order->getId()}">{=__('Show')}</a>
+            </div>
+        </div>
+    {/foreach}
+{else}
+    <p style="text-align: center; border-bottom: solid #eee 1px; padding: 30px;" class="warning">{=__('There are no orders.')}</p>
+{/if}

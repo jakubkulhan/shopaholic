@@ -1,0 +1,22 @@
+{if !empty($pages)}
+    {foreach $pages as $_}
+        <div class="row page">
+            <div class="column grid-10">
+                <h2>{$_->getName()}</h2>
+                {$_->getContent()|truncate:512}
+            </div>
+            <div class="column grid-2 controls">
+                {if $_->getPicture() !== NULL && $_->getPicture()->getThumbnail() !== NULL}
+                    <img src="{=Environment::expand('%mediaBaseUri%/' . $_->getPicture()->getThumbnail()->getFile())}" alt="{$_->getName()}"><br>
+                {/if}
+                <a href="{link Content:editPage, $_->getNiceName()}">✎&nbsp;{=__('Edit')}</a>
+                <a href="{link Content:deletePage, $_->getNiceName()}" onclick="return confirm('{!=__('Do you really want to delete this page?')}');">⊗&nbsp;{=__('Delete')}</a>
+            </div>
+        </div>
+    {/foreach}
+{else}
+    <p style="text-align: center; border-bottom: solid #eee 1px; padding: 30px;" class="warning">{=__('There are no pages.')}</p>
+{/if}
+<div class="controls" style="text-align: center; font-size: 150%; padding: 20px;">
+    <a href="{link Content:addPage}">⊕&nbsp;{=__('Add')}</a>
+</div>

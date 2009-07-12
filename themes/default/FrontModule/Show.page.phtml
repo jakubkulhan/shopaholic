@@ -1,0 +1,5 @@
+<h1>{$page->getName()}</h1>
+{if $page->getPicture()}
+    <img src="{=Environment::expand('%mediaBaseUri%/' . $page->getPicture()->getFile())}" alt="{$page->getName()}" style="float: right; margin: 10px;">
+{/if}
+{!$page->getContent()|texy}

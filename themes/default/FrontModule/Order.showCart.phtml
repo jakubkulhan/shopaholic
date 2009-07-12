@@ -1,0 +1,14 @@
+{assign $title 'Košík'}
+
+{if !empty($products)}
+    {include '@products.phtml', 'products' => $products, 'product_counts' => $product_counts}
+    <div id="cart-total" class="row">
+        <div class="column grid-7">{=__('Total')}</div>
+        <div class="column grid-2"><strong>{=$total}&thinsp;{=Environment::expand('%currency%')}</strong></div>
+    </div>
+    <div style="text-align: center; padding: 1px;">
+        <a class="next" href="{link Order:fillData}">{if isset($side->cart->data) && !empty($side->cart->data)}{=__('Change order data')}{else}{=__('Fill order data')}{/if} »</a>
+    </div>
+{else}
+    <p style="text-align: center;">{=__('The cart is empty.')}</p>
+{/if}

@@ -1,0 +1,23 @@
+<table class="price-changes">
+    <thead>
+        <tr>
+            <th class="at">{=__('At')}</th>
+            <th class="price">{=__('Price')}</th>
+            <th class="change">&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php $previous_price = NULL; ?>
+    {foreach $changes as $change}
+        <tr>
+            <td class="at">{$change->changed_at|date}</th>
+            <td class="price">{$change->price}&thinsp;{=Environment::expand('%currency%')}</th>
+            <td class="change"><?php
+                $_ = intval($change->price) - $previous_price;
+                echo $_ === 0 || $previous_price === NULL ? "►" : ($_ < 0 ? "▼" : "▲");
+                $previous_price = intval($change->price);
+            ?></td>
+        </tr>
+    {/foreach}
+    </tbody>
+</table>

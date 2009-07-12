@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>{if isset($title)}{$title} | {/if}{=__('admin')}</title>
+        <link rel="stylesheet" type="text/css" href="{=Environment::expand('%themeBaseUri%/admin.css')}">
+        <link rel="stylesheet" type="text/css" href="{=Environment::expand('%themeBaseUri%/admin-print.css')}" media="print">
+    </head>
+    <body>
+        <div id="page">
+            <div id="header" class="row">
+                <div class="column grid-9">
+                    <h1><a href="{link Dashboard:}">{=__('admin')}</a></h1>
+                </div>
+                <div id="credentials" class="column grid-3">
+                    {=__('logged in as:')} <strong>{$user->getIdentity()->getName()}</strong>
+                    (<a href="{link Login:logout}">{=__('logout')}</a>)
+                </div>
+            </div>
+            <div class="row">
+                <div id="menu" class="column grid-12">
+                    <ul>
+                        <li><span>{=__('Content')}</span>
+                            <ul>
+                                <li><a href="{link Content:titlePage}">{=__('Title page')}</a></li>
+                                <li><a href="{link Content:products}">{=__('Products')}</a></li>
+                                <li><a href="{link Content:categories}">{=__('Categories')}</a></li>
+                                <li><a href="{link Content:manufacturers}">{=__('Manufacturers')}</a></li>
+                                <li><a href="{link Content:pages}">{=__('Pages')}</a></li>
+                                <li><a href="{link Content:pictures}">{=__('Pictures')}</a></li>
+                                <li><a href="{link Content:availabilities}">{=__('Availabilities')}</a></li>
+                            </ul>
+                        </li>
+                        <li><span>{=__('Orders')}</span>
+                            <ul>
+                            {foreach $order_statuses as $order_status}
+                                <li><a href="{link Orders:status, $order_status->getId()}">►&nbsp;{$order_status->getName()}{if $order_status->getInitial()} ✱{/if}</a></li>
+                            {/foreach}
+                                <li><a href="{link Orders:manageStatuses}">{=__('Manage statuses')}</a></li>
+                                <li><a href="{link Orders:managePaymentTypes}">{=__('Manage payment types')}</a></li>
+                                <li><a href="{link Orders:manageDeliveryTypes}">{=__('Manage delivery types')}</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="{link Settings:}">{=__('Settings')}</a>
+                            <ul>
+                                <li><a href="{link Settings:changeLogin}">{=__('Change login')}</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="{link Import:}">{=__('Import')}</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div id="main" class="column grid-12">
+                    {!$content->render()}
+                </div>
+            </div>
+            <hr id="clearer" style="clear: both; visibility: hidden;">
+        </div>
+    </body>
+</html>

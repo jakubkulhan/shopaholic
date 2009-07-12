@@ -1,0 +1,47 @@
+{if !empty($products)}
+    <table class="products">
+        <thead>
+            <tr>
+                <th class="code">{=__('Code')}</th>
+                <th class="name">{=__('Name')}</th>
+                <th class="price">{=__('Price')}</th>
+                <th class="controls">&nbsp;</th>
+            </tr>
+        </thead>
+        <tbody>
+        {foreach $products as $_}
+            <tr>
+                <td class="code">{$_->getCode()}</td>
+                <td class="name">{$_->getName()}</td>
+                <td class="price">{$_->getPrice()}&thinsp;{=Environment::expand('%currency%')}</td>
+                <td class="controls">
+                    <a href="{link Content:priceChanges, $_->getId()}">↯&nbsp;{=__('Price changes')}</a>
+                    <a href="{link Content:editProduct, $_->getNiceName()}">✎&nbsp;{=__('Edit')}</a>
+                    <a href="{link Content:deleteProduct, $_->getNiceName()}" onclick="return confirm('{!=__('Do you really want to delete this product?')}');">⊗&nbsp;{=__('Delete')}</a>
+                </td>
+            </tr>
+        {/foreach}
+        </tbody>
+    </table>
+    <div id="pagination" class="controls">
+    {if !$paginator->isFirst()}
+        <a href="{link Content:products, $paginator->getPage() - 1}">«</a>
+    {/if}
+    {for $i = 1; $i <= $paginator->getPageCount(); ++$i}
+        {if $i === $paginator->getPage()}
+            <strong>{$i}</strong>
+        {else}
+            <a href="{link Content:products, $i}">{$i}</a>
+        {/if}
+    {/for}
+    {if !$paginator->isLast()}
+        <a href="{link Content:products, $paginator->getPage() + 1}">»</a>
+    {/if}
+    </div>
+    <hr>
+{else}
+    <p style="text-align: center; border-bottom: solid #eee 1px; padding: 30px;" class="warning">{=__('There are no products.')}</p>
+{/if}
+<div class="controls" style="text-align: center; font-size: 150%; padding: 20px;">
+    <a href="{link Content:addProduct}">⊕&nbsp;{=__('Add')}</a>
+</div>

@@ -1,0 +1,24 @@
+<div class="row">
+    <div class="column grid-6">
+        <h2>{=__('Welcome')}</h2>
+        {!=__('Welcome to Shopaholic administration. Shopaholic is an open-source e-shop based on "PHP":http://php.net/. It aims to be the easiest, yet quite useful, e-shop platform ever made.')|texy}
+        <h2>{=__('Texy!')}</h2>
+        {!=__('"Texy!":http://texy.info/ is a library for text markup that Shopaholic uses. If you want to make something **bold**, use `**word**` syntax, for *italics* use `*word*`. You can find "more about syntax here":http://texy.info/en/syntax.')|texy}
+        <h2>{=__('Tip: errors')}</h2>
+        {!=__('Shopaholic keeps with philosophy that when no error happen, do not interrupt user. So when you do not see any error, everything went OK.')|texy}
+    </div>
+    <div class="column grid-6">
+        <h2>{=__('Statistics')}</h2>
+        <table class="statistics">
+            <tbody>
+                <tr><th class="name">{=__('Products count')}</th><td class="value">{$products_count}</td></tr>
+                <tr><th class="name">{=__('Categories count')}</th><td class="value">{$categories_count}</td></tr>
+                <tr><th class="name">{=__('Manufacturers count')}</th><td class="value">{$manufacturers_count}</td></tr>
+                <tr><th class="name">{=__('Pages count')}</th><td class="value">{$pages_count}</td></tr>
+                <tr><th class="name">{=__('Pictures count')}</th><td class="value">{$pictures_count}</td></tr>
+                <tr><th class="name">{=__('Orders count')}</th><td class="value">{$orders_count}</td></tr>
+                <tr><th class="name">{=__('Orders with initial status count')}</th><td class="value">{$orders_initial_count}</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
