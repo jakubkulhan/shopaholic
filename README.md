@@ -2,7 +2,7 @@
 
 Shopaholic is an open-source e-shop based on PHP with [Nette Framework](http://nettephp.com/) and [dibi](http://dibiphp.com/ "tiny'n'smart database layer") under the hood. It aims to be the easiest, yet quite useful, e-shop platform ever made.
 
-## Instalation
+## Installation
 
 - copy all files into your document root
 - import `my.sql` into your database (it's for MySQL; if you have some other database, try to change SQL to dialect your DB undestands)
