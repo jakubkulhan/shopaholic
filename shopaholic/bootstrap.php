@@ -7,9 +7,6 @@ $loader->addDirectory(LIB_DIR);
 $loader->autoRebuild = TRUE;
 $loader->register();
 
-// debugging
-Debug::enable(NULL, BASE_DIR . '/error.log', 'admin@example.com');
-
 // configure
 foreach (require Environment::expand('%settingsFile%') as $k => $v) {
     Environment::setVariable($k, $v);
@@ -32,6 +29,9 @@ if (!function_exists('date_default_timezone_set')) {
 
 date_default_timezone_set(require Environment::expand('%timezoneFile%'));
 
+// debugging
+Debug::enable(NULL, BASE_DIR . '/error.log', Environment::expnad('%adminEmail%'));
+
 // paths
 Environment::setVariable('themeDir', Environment::expand('%baseDir%/themes'));
 Environment::setVariable('templatesDir', Environment::expand('%themeDir%/%theme%'));
@@ -51,7 +51,9 @@ foreach (glob(APP_DIR . '/locale/' . '*.php') as $_) {
     $available[substr(substr($_, strlen(APP_DIR . '/locale/')), 0, 2)] = $_;
 }
 tr::$locale = Environment::getHttpRequest()->detectLanguage(array_keys($available));
-list(tr::$plurals[tr::$locale], tr::$table[tr::$locale]) = require $available[tr::$locale];
+if (tr::$locale) {
+    list(tr::$plurals[tr::$locale], tr::$table[tr::$locale]) = require $available[tr::$locale];
+}
 
 // connect to DB
 dibi::connect(require Environment::expand('%dbFile%'));
