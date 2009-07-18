@@ -30,7 +30,7 @@ if (!function_exists('date_default_timezone_set')) {
 date_default_timezone_set(require Environment::expand('%timezoneFile%'));
 
 // debugging
-Debug::enable(NULL, BASE_DIR . '/error.log', Environment::expnad('%adminEmail%'));
+Debug::enable(NULL, BASE_DIR . '/error.log', Environment::expand('%adminEmail%'));
 
 // paths
 Environment::setVariable('themeDir', Environment::expand('%baseDir%/themes'));
@@ -46,6 +46,7 @@ SafeStream::register();
 
 
 // configure locale
+require_once LIB_DIR . '/tr.php';
 $available = array();
 foreach (glob(APP_DIR . '/locale/' . '*.php') as $_) {
     $available[substr(substr($_, strlen(APP_DIR . '/locale/')), 0, 2)] = $_;
