@@ -9,7 +9,7 @@ Shopaholic is an open-source e-shop based on PHP with [Nette Framework](http://n
 - edit `.htaccess`
 - check configuration in `conf/` subdirectory (especially target at `common.php`, `db.php` and `timezone.php`, the others are possible to edit in administration)
 - make directories `media/` and `tmp/` if not present
-- and in the end change permission to `777` on `conf/`, `media/` and `tmp/`
+- and in the end change permission to `777` on `conf/`, `media/` and `tmp/` if not yet
 
 ## Usage
 
