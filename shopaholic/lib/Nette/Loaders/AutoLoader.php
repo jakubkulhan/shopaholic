@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Loaders
- * @version    $Id: AutoLoader.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: AutoLoader.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -39,7 +39,7 @@ abstract class AutoLoader extends Object
 	static private $loaders = array();
 
 	/** @var int  for profiling purposes */
-	public static $count = 0;
+	static public $count = 0;
 
 
 

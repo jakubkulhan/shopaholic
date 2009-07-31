@@ -3,7 +3,7 @@ final class Front_ShowPresenter extends Front_BasePresenter
 {
     public static $expandCommandsFns = array();
 
-    public function actionDefault($path = '', $page_number = 0)
+    public function actionDefault($path = '', $page_number = 0, $letter = NULL)
     {
         // get nice name
         $path = explode('/', rtrim($path, '/'));
@@ -11,11 +11,11 @@ final class Front_ShowPresenter extends Front_BasePresenter
         $rest = implode('/', $path);
 
         // what's with rest?
-        if (!empty($rest)) {
+        /*if (!empty($rest)) {
             $this->redirect(301, 'this', $last);
             $this->terminate();
             return ;
-        }
+        }*/
 
         // default page?
         if (empty($last)) {
@@ -38,6 +38,8 @@ final class Front_ShowPresenter extends Front_BasePresenter
             } else {
                 $this->setView(get_class($page->getRef()));
                 $this->template->{get_class($page->getRef())} = $page->getRef();
+                $this->template->letter = $letter;
+                $this->template->have_letter = TRUE;
             }
 
             $this->template->title = $page->getName();
@@ -59,7 +61,7 @@ final class Front_ShowPresenter extends Front_BasePresenter
     {
         $this->template->paginator = new Paginator;
         $this->template->paginator->setItemCount(
-            mapper::products()->countByCategory($this->template->category));
+            mapper::products()->countByCategory($this->template->category, $this->template->letter));
         $this->template->paginator->setItemsPerPage(
             Environment::getVariable('itemsPerPage', 30));
         $this->template->paginator->setPage($this->template->page_number);
@@ -67,7 +69,8 @@ final class Front_ShowPresenter extends Front_BasePresenter
         $this->template->products = mapper::products()
             ->findByCategory($this->template->category,
                 $this->template->paginator->getLength(),
-                $this->template->paginator->getOffset());
+                $this->template->paginator->getOffset(),
+                $this->template->letter);
         $this->template->subcategories = mapper::categories()
             ->findSubcategories($this->template->category);
     }
@@ -76,7 +79,7 @@ final class Front_ShowPresenter extends Front_BasePresenter
     {
         $this->template->paginator = new Paginator;
         $this->template->paginator->setItemCount(
-            mapper::products()->countByManufacturer($this->template->manufacturer));
+            mapper::products()->countByManufacturer($this->template->manufacturer, $this->template->letter));
         $this->template->paginator->setItemsPerPage(
             Environment::getVariable('itemsPerPage', 30));
         $this->template->paginator->setPage($this->template->page_number);
@@ -84,7 +87,8 @@ final class Front_ShowPresenter extends Front_BasePresenter
         $this->template->products = mapper::products()
             ->findByManufacturer($this->template->manufacturer,
                 $this->template->paginator->getLength(),
-                $this->template->paginator->getOffset());
+                $this->template->paginator->getOffset(),
+                $this->template->letter);
     }
 
     public function renderProduct()

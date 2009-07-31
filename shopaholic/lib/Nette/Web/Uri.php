@@ -15,12 +15,12 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Web
- * @version    $Id: Uri.php 362 2009-06-22 14:16:08Z david@grudl.com $
+ * @version    $Id: Uri.php 218 2009-02-23 13:37:27Z david@grudl.com $
  */
 
 
 
-require_once dirname(__FILE__) . '/../FreezableObject.php';
+require_once dirname(__FILE__) . '/../Object.php';
 
 
 
@@ -28,35 +28,23 @@ require_once dirname(__FILE__) . '/../FreezableObject.php';
  * URI Syntax (RFC 3986).
  *
  * <pre>
- * http://user:password@nettephp.com:8042/en/manual.html?name=param#fragment
- * \__/^^^\_____________________________/\_____________/^\________/^\______/
- *   |                    |                     |            |         |
- * scheme             authority               path         query    fragment
+ * http://user:pass@nettephp.com:8042/en/manual.html?name=param#fragment
+ * \__/^^^\_________________________/\_____________/^\________/^\______/
+ *   |                |                     |            |         |
+ * scheme         authority               path         query    fragment
  * </pre>
  *
- * - authority:   [user[:password]@]host[:port]
- * - hostUri:     http://user:password@nettephp.com:8042
+ * - authority:   [user[:pass]@]host[:port]
+ * - hostUri:     http://user:pass@nettephp.com:8042
  *
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Web
- *
- * @property   string $scheme
- * @property   string $user
- * @property   string $password
- * @property   string $host
- * @property   string $port
- * @property   string $path
- * @property   string $query
- * @property   string $fragment
- * @property-read string $absoluteUri
- * @property-read string $authority
- * @property-read string $hostUri
  */
-class Uri extends FreezableObject
+class Uri extends Object
 {
 	/** @var array */
-	public static $defaultPorts = array(
+	static public $defaultPorts = array(
 		'http' => 80,
 		'https' => 443,
 		'ftp' => 21,
@@ -65,28 +53,28 @@ class Uri extends FreezableObject
 	);
 
 	/** @var string */
-	private $scheme = '';
+	public $scheme = '';
 
 	/** @var string */
-	private $user = '';
+	public $user = '';
 
 	/** @var string */
-	private $pass = '';
+	public $pass = '';
 
 	/** @var string */
-	private $host = '';
+	public $host = '';
 
 	/** @var int */
-	private $port = NULL;
+	public $port = NULL;
 
 	/** @var string */
-	private $path = '';
+	public $path = '';
 
 	/** @var string */
-	private $query = '';
+	public $query = '';
 
 	/** @var string */
-	private $fragment = '';
+	public $fragment = '';
 
 
 
@@ -96,7 +84,7 @@ class Uri extends FreezableObject
 	 */
 	public function __construct($uri = NULL)
 	{
-		if (is_string($uri)) {
+		if ($uri !== NULL) {
 			$parts = @parse_url($uri); // intentionally @
 			if ($parts === FALSE) {
 				throw new InvalidArgumentException("Malformed or unsupported URI '$uri'.");
@@ -109,239 +97,7 @@ class Uri extends FreezableObject
 			if (!$this->port && isset(self::$defaultPorts[$this->scheme])) {
 				$this->port = self::$defaultPorts[$this->scheme];
 			}
-
-		} elseif ($uri instanceof self) {
-			foreach ($uri as $key => $val) {
-				$this->$key = $val;
-			}
 		}
-	}
-
-
-
-	/**
-	 * Sets the scheme part of URI.
-	 * @param  string
-	 * @return void
-	 */
-	public function setScheme($value)
-	{
-		$this->updating();
-		$this->scheme = (string) $value;
-	}
-
-
-
-	/**
-	 * Returns the scheme part of URI.
-	 * @return string
-	 */
-	public function getScheme()
-	{
-		return $this->scheme;
-	}
-
-
-
-	/**
-	 * Sets the user name part of URI.
-	 * @param  string
-	 * @return void
-	 */
-	public function setUser($value)
-	{
-		$this->updating();
-		$this->user = (string) $value;
-	}
-
-
-
-	/**
-	 * Returns the user name part of URI.
-	 * @return string
-	 */
-	public function getUser()
-	{
-		return $this->user;
-	}
-
-
-
-	/**
-	 * Sets the password part of URI.
-	 * @param  string
-	 * @return void
-	 */
-	public function setPassword($value)
-	{
-		$this->updating();
-		$this->pass = (string) $value;
-	}
-
-
-
-	/**
-	 * Returns the password part of URI.
-	 * @return string
-	 */
-	public function getPassword()
-	{
-		return $this->pass;
-	}
-
-
-
-	/**
-	 * @deprecated
-	 */
-	public function setPass($value)
-	{
-		$this->setPassword($value);
-	}
-
-
-
-	/**
-	 * @deprecated
-	 */
-	public function getPass()
-	{
-		return $this->pass;
-	}
-
-
-
-	/**
-	 * Sets the host part of URI.
-	 * @param  string
-	 * @return void
-	 */
-	public function setHost($value)
-	{
-		$this->updating();
-		$this->host = (string) $value;
-	}
-
-
-
-	/**
-	 * Returns the host part of URI.
-	 * @return string
-	 */
-	public function getHost()
-	{
-		return $this->host;
-	}
-
-
-
-	/**
-	 * Sets the port part of URI.
-	 * @param  string
-	 * @return void
-	 */
-	public function setPort($value)
-	{
-		$this->updating();
-		$this->port = (int) $value;
-	}
-
-
-
-	/**
-	 * Returns the port part of URI.
-	 * @return string
-	 */
-	public function getPort()
-	{
-		return $this->port;
-	}
-
-
-
-	/**
-	 * Sets the path part of URI.
-	 * @param  string
-	 * @return void
-	 */
-	public function setPath($value)
-	{
-		$this->updating();
-		$this->path = (string) $value;
-	}
-
-
-
-	/**
-	 * Returns the path part of URI.
-	 * @return string
-	 */
-	public function getPath()
-	{
-		return $this->path;
-	}
-
-
-
-	/**
-	 * Sets the query part of URI.
-	 * @param  string|array
-	 * @return void
-	 */
-	public function setQuery($value)
-	{
-		$this->updating();
-		$this->query = (string) (is_array($value) ? http_build_query($value, '', '&') : $value);
-
-	}
-
-
-
-	/**
-	 * Appends the query part of URI.
-	 * @param  string|array
-	 * @return void
-	 */
-	public function appendQuery($value)
-	{
-		$this->updating();
-		$value = (string) (is_array($value) ? http_build_query($value, '', '&') : $value);
-		$this->query .= ($this->query === '' || $value === '') ? $value : '&' . $value;
-	}
-
-
-
-	/**
-	 * Returns the query part of URI.
-	 * @return string
-	 */
-	public function getQuery()
-	{
-		return $this->query;
-	}
-
-
-
-	/**
-	 * Sets the fragment part of URI.
-	 * @param  string
-	 * @return void
-	 */
-	public function setFragment($value)
-	{
-		$this->updating();
-		$this->fragment = (string) $value;
-	}
-
-
-
-	/**
-	 * Returns the fragment part of URI.
-	 * @return string
-	 */
-	public function getFragment()
-	{
-		return $this->fragment;
 	}
 
 
@@ -353,8 +109,8 @@ class Uri extends FreezableObject
 	public function getAbsoluteUri()
 	{
 		return $this->scheme . '://' . $this->getAuthority() . $this->path
-			. ($this->query === '' ? '' : '?' . $this->query)
-			. ($this->fragment === '' ? '' : '#' . $this->fragment);
+			. ($this->query == '' ? '' : '?' . $this->query)
+			. ($this->fragment == '' ? '' : '#' . $this->fragment);
 	}
 
 
@@ -370,8 +126,8 @@ class Uri extends FreezableObject
 			$authority .= ':' . $this->port;
 		}
 
-		if ($this->user !== '' && $this->scheme !== 'http' && $this->scheme !== 'https') {
-			$authority = $this->user . ($this->pass === '' ? '' : ':' . $this->pass) . '@' . $authority;
+		if ($this->user != '' && $this->scheme !== 'http' && $this->scheme !== 'https') {
+			$authority = $this->user . ($this->pass == '' ? '' : ':' . $this->pass) . '@' . $authority;
 		}
 
 		return $authority;
@@ -412,7 +168,7 @@ class Uri extends FreezableObject
 		// compare query strings
 		$part = (string) strtok('?#');
 		if ($part !== '') {
-			$tmp = preg_split('#[&;]#', self::unescape(strtr($part, '+', ' '), '%&;'));
+			$tmp = explode('&', self::unescape(strtr($part, '+', ' '), '%&'));
 			sort($tmp);
 			$part = implode('&', $tmp);
 		}
@@ -427,13 +183,12 @@ class Uri extends FreezableObject
 	 */
 	public function canonicalize()
 	{
-		$this->updating();
-		$this->path = $this->path === '' ? '/' : self::unescape($this->path, '%/');
+		$this->path = $this->path == '' ? '/' : self::unescape($this->path, '%/');
 
 		$this->host = strtolower(rawurldecode($this->host));
 
 		if ($this->query !== '') {
-			$tmp = preg_split('#[&;]#', self::unescape(strtr($this->query, '+', ' '), '%&;'));
+			$tmp = explode('&', self::unescape(strtr($this->query, '+', ' '), '%&'));
 			sort($tmp);
 			$this->query = implode('&', $tmp);
 		}

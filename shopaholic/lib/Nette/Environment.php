@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: Environment.php 356 2009-06-19 21:14:46Z david@grudl.com $
+ * @version    $Id: Environment.php 306 2009-05-08 10:56:50Z david@grudl.com $
  */
 
 
@@ -149,9 +149,13 @@ final class Environment
 	 * @param  bool   set or unser
 	 * @return void
 	 */
-	public static function setMode($mode, $value = TRUE)
+	public static function setMode($mode, $flag = TRUE)
 	{
-		self::$mode[$mode] = (bool) $value;
+		if ($mode === 'live') {
+			trigger_error("Environment mode 'live' is deprecated; use 'production' instead.", E_USER_WARNING);
+			$mode = 'production';
+		}
+		self::$mode[$mode] = (bool) $flag;
 	}
 
 
@@ -164,6 +168,10 @@ final class Environment
 	 */
 	public static function getMode($mode)
 	{
+		if ($mode === 'live') {
+			trigger_error("Environment mode 'live' is deprecated; use 'production' instead.", E_USER_WARNING);
+			$mode = 'production';
+		}
 		if (isset(self::$mode[$mode])) {
 			return self::$mode[$mode];
 
@@ -191,6 +199,17 @@ final class Environment
 	 */
 	public static function isProduction()
 	{
+		return self::getMode('production');
+	}
+
+
+
+	/**
+	 * @deprecated {@link Environment::isProduction()}
+	 */
+	public static function isLive()
+	{
+		trigger_error('Environment::isLive() is deprecated; use Environment::isProduction() instead.', E_USER_WARNING);
 		return self::getMode('production');
 	}
 
@@ -259,19 +278,35 @@ final class Environment
 		}
 	}
 
+    /**
+     * Returns the all environment variables.
+     * @return array
+     */
+    public static function getVariables()
+    {
+        $res = array();
+        foreach (self::$vars as $name => $foo) {
+            $res[$name] = self::getVariable($name);
+        }
+        return $res;
+    }
 
 
 	/**
-	 * Returns the all environment variables.
-	 * @return array
+	 * Define one or more variables as constants.
+	 * @param  string|array
+	 * @return void
 	 */
-	public static function getVariables()
+	public static function exportConstant($names)
 	{
-		$res = array();
-		foreach (self::$vars as $name => $foo) {
-			$res[$name] = self::getVariable($name);
+		if (!is_array($names)) {
+			$names = func_get_args();
 		}
-		return $res;
+
+		foreach ($names as $name) {
+			$const = strtoupper(preg_replace('#(.)([A-Z]+)#', '$1_$2', $name));
+			define($const, self::getVariable($name));
+		}
 	}
 
 
@@ -353,7 +388,7 @@ final class Environment
 	 * @param  bool   throw exception if service doesn't exist?
 	 * @return mixed
 	 */
-	public static function getService($name, $need = TRUE)
+	static public function getService($name, $need = TRUE)
 	{
 		return self::getServiceLocator()->getService($name, $need);
 	}

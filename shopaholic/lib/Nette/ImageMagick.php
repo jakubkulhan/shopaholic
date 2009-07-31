@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: ImageMagick.php 355 2009-06-16 17:31:51Z david@grudl.com $
+ * @version    $Id: ImageMagick.php 267 2009-04-08 10:38:14Z david@grudl.com $
  */
 
 
@@ -41,10 +41,10 @@ require_once dirname(__FILE__) . '/Object.php';
 class ImageMagick extends Image
 {
 	/** @var string  path to ImageMagick library */
-	public static $path = '';
+	static public $path = '';
 
 	/** @var string */
-	public static $tempDir;
+	static public $tempDir;
 
 	/** @var string */
 	private $file;
@@ -68,7 +68,7 @@ class ImageMagick extends Image
 	public function __construct($file, & $format = NULL)
 	{
 		if (!is_file($file)) {
-			throw new InvalidArgumentException('File not found.');
+			throw new InvalidArgumentException('File not exists.');
 		}
 		$format = $this->setFile(realpath($file));
 		if ($format === 'JPEG') $format = self::JPEG;

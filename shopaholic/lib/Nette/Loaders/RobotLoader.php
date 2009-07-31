@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Loaders
- * @version    $Id: RobotLoader.php 327 2009-05-27 02:20:56Z david@grudl.com $
+ * @version    $Id: RobotLoader.php 185 2009-01-09 00:22:52Z david@grudl.com $
  */
 
 
@@ -147,14 +147,14 @@ class RobotLoader extends AutoLoader
 	 * Add directory (or directories) to list.
 	 * @param  string|array
 	 * @return void
-	 * @throws DirectoryNotFoundException if path is not found
+	 * @throws InvalidArgumentException if path is not found
 	 */
 	public function addDirectory($path)
 	{
 		foreach ((array) $path as $val) {
 			$real = realpath($val);
 			if ($real === FALSE) {
-				throw new DirectoryNotFoundException("Directory '$val' not found.");
+				throw new InvalidArgumentException("Directory '$val' not found.");
 			}
 			$this->scanDirs[] = $real;
 		}
@@ -172,8 +172,8 @@ class RobotLoader extends AutoLoader
 	{
 		$class = strtolower($class);
 		if (isset($this->list[$class]) && $this->list[$class] !== $file) {
-			spl_autoload_call($class); // hack: enables exceptions
-			throw new InvalidStateException("Ambiguous class '$class' resolution; defined in $file and in " . $this->list[$class] . ".");
+			// throwing exception is not possible, Nette\Debug converts errors to exceptions
+			die("Ambiguous class '$class' resolution; defined in $file and in " . $this->list[$class] . ".");
 		}
 		$this->list[$class] = $file;
 	}

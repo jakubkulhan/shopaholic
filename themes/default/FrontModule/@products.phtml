@@ -35,30 +35,115 @@
         </tbody>
     </table>
 {else}
-    <div class="row">
-    {foreach $products as $product}
-        <div class="column grid-3 product">
-            <h2><a href="{link Show:default, $product->getNiceName()}">{$product->getName()}</a></h2>
-            <div class="row description">
-                <div class="column grid-1 picture"><a href="{link Show:default, $product->getNiceName()}"><img src="{if $product->getPicture() && $product->getPicture()->getThumbnail()}{=Environment::expand('%mediaBaseUri%/' . $product->getPicture()->getThumbnail()->getFile())}{else}{=Environment::expand('%themeBaseUri%/img/nopicture.png')}{/if}" alt="{$product->getName()}"></a></div>
-                <div class="column grid-2">
-                    {if $product->getMetaDescription()}
-                        {!$product->getMetaDescription()|texy}
-                    {else}
-                        {if $product->getDescription()}
-                            {!$product->getDescription()|truncate:128|texy}
+    {if isset($have_letter) && $have_letter}
+        {if $letter !== NULL || ($letter === NULL && !empty($products))}
+            <div id="alphabet"><!--{=__('Alphabetically:')}<br>-->
+
+            {if $letter === "#"}
+                <strong>0–9</strong>
+            {else}
+                <a href="{link this, $path, 1, "#"}" title="{=__('Show products starting with number.')}">0–9</a>
+            {/if}
+
+            {for $i = ord('a'), $stop = ord('z'), $l = ord($letter); $i <= $stop; $i++}
+                {if $i === $l}
+                    <strong>{=strtoupper(chr($i))}</strong>
+                {else}
+                    <a href="{link this, $path, 1, chr($i)}" title="{=__('Show products starting with letter %s.', strtoupper(chr($i)))}">{=strtoupper(chr($i))}</a>
+                {/if}
+            {/for}
+            </div>
+            <hr>
+        {/if}
+    {/if}
+
+    {if !empty($products)}
+        <div class="row">
+        {foreach $products as $product}
+            <div class="column grid-3 product">
+                <h2><a href="{link Show:default, $product->getNiceName()}">{$product->getName()}</a></h2>
+                <div class="row description">
+                    <div class="column grid-1 picture"><a href="{link Show:default, $product->getNiceName()}"><img src="{if $product->getPicture() && $product->getPicture()->getThumbnail()}{=Environment::expand('%mediaBaseUri%/' . $product->getPicture()->getThumbnail()->getFile())}{else}{=Environment::expand('%themeBaseUri%/img/nopicture.png')}{/if}" alt="{$product->getName()}"></a></div>
+                    <div class="column grid-2">
+                        {if $product->getMetaDescription()}
+                            {!$product->getMetaDescription()|texy}
                         {else}
-                            {!$product->getName()|texy}
+                            {if $product->getDescription()}
+                                {!$product->getDescription()|truncate:128|texy}
+                            {else}
+                                {!$product->getName()|texy}
+                            {/if}
                         {/if}
-                    {/if}
+                    </div>
+                </div>
+                {*<div class="row info">
+                    <div class="column grid-1 availability">{if $product->getAvailability()}<em>{$product->getAvailability()->getName()}</em>{else}&nbsp;{/if}</div>
+                    <div class="column grid-1 code">{if $product->getCode()}{$product->getCode()}{else}&nbsp;{/if}</div>
+                    <div class="column grid-1 price"><strong>{$product->getPrice()}&thinsp;{=Environment::expand('%currency%')}</strong></div>
+                </div>
+                <div class="row controls">
+                    <div class="column grid-3">
+                        <form method="post" action="{link Order:add}">
+                            <p><input type="hidden" name="product_id" value="{$product->getId()}">
+                            <input type="text" name="amount" value="1" size="1">&thinsp;{=__('pcs')}
+                            <input type="submit" value="{=__('into the cart')}"></p>
+                        </form>
+                    </div>
+                </div>*}
+
+                <div class="row info">
+                    <div class="column grid-1_5 other">
+                        <div class="availability">{if $product->getAvailability()}<em>{$product->getAvailability()->getName()}</em>{else}&nbsp;{/if}</div>
+                        <form method="post" action="{link Order:add}">
+                            <p><input type="hidden" name="product_id" value="{$product->getId()}">
+                            <input type="text" name="amount" value="1" size="1">
+                            <input type="submit" value="{=__('Buy')}"></p>
+                        </form>
+                        <div class="code">{if $product->getCode()}Kód: {$product->getCode()}{else}&nbsp;{/if}</div>
+                    </div>
+                    <div class="column grid-1_5 price">
+                        <strong>{$product->getPrice()}&thinsp;{=Environment::expand('%currency%')}</strong>
+                    </div>
                 </div>
             </div>
-            <div class="row info">
-                <div class="column grid-1 availability">{if $product->getAvailability()}<em>{$product->getAvailability()->getName()}</em>{else}&nbsp;{/if}</div>
-                <div class="column grid-1 code">{if $product->getCode()}{$product->getCode()}{else}&nbsp;{/if}</div>
-                <div class="column grid-1 price"><strong>{$product->getPrice()}&thinsp;{=Environment::expand('%currency%')}</strong></div>
-            </div>
+        {/foreach}
         </div>
-    {/foreach}
-    </div>
+
+        {if isset($paginator)}
+            <hr>
+            <div id="pagination">
+            {if $presenter instanceof Front_SearchPresenter}
+                {if !$paginator->isFirst()}
+                    <a href="{link Search:default, $q, $paginator->getPage() - 1}">«</a>
+                {/if}
+                {for $i = 1; $i <= $paginator->getPageCount(); ++$i}
+                    {if $i === $paginator->getPage()}
+                        <strong>{$i}</strong>
+                    {else}
+                        <a href="{link Search:default, $q, $i}">{$i}</a>
+                    {/if}
+                {/for}
+                {if !$paginator->isLast() && !empty($products)}
+                    <a href="{link Search:default, $q, $paginator->getPage() + 1}">»</a>
+                {/if}
+            {else}
+                {if !$paginator->isFirst()}
+                    <a href="{link Show:default, $path, $paginator->getPage() - 1, $letter}">«</a>
+                {/if}
+                {for $i = 1; $i <= $paginator->getPageCount(); ++$i}
+                    {if $i === $paginator->getPage()}
+                        <strong>{$i}</strong>
+                    {else}
+                        <a href="{link Show:default, $path, $i, $letter}">{$i}</a>
+                    {/if}
+                {/for}
+                {if !$paginator->isLast() && !empty($products)}
+                    <a href="{link Show:default, $path, $paginator->getPage() + 1, $letter}">»</a>
+                {/if}
+            {/if}
+            </div>
+        {/if}
+    {else}
+        <p style="text-align: center; font-style: italic;" class="warning">{=__('There are no products.')}</p>
+    {/if}
 {/if}

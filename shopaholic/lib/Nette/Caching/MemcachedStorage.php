@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Caching
- * @version    $Id: MemcachedStorage.php 361 2009-06-22 13:54:30Z david@grudl.com $
+ * @version    $Id: MemcachedStorage.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -141,14 +141,12 @@ class MemcachedStorage extends Object implements ICacheStorage
 
 		$expire = 0;
 		if (!empty($dp[Cache::EXPIRE])) {
-			$expire = $dp[Cache::EXPIRE];
-			if (is_string($expire) && !is_numeric($expire)) {
-				$expire = strtotime($expire) - time();
-			} elseif ($expire > Tools::YEAR) {
-				$expire -= time();
+			$expire = (int) $dp[Cache::EXPIRE];
+			if ($expire <= Tools::YEAR) {
+				$expire += time();
 			}
-			if (!empty($dp[Cache::SLIDING])) {
-				$meta[self::META_DELTA] = (int) $expire; // sliding time
+			if (!empty($dp[Cache::REFRESH])) {
+				$meta[self::META_DELTA] = $expire - time(); // sliding time
 			}
 		}
 

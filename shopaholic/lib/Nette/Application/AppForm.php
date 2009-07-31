@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Application
- * @version    $Id: AppForm.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: AppForm.php 259 2009-04-06 11:44:19Z david@grudl.com $
  */
 
 
@@ -32,8 +32,6 @@ require_once dirname(__FILE__) . '/../Application/ISignalReceiver.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Application
- *
- * @property-read Presenter $presenter
  */
 class AppForm extends Form implements ISignalReceiver
 {

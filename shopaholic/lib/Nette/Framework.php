@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: Framework.php 392 2009-06-29 09:57:07Z david@grudl.com $
+ * @version    $Id: Framework.php 221 2009-03-05 18:41:19Z david@grudl.com $
  */
 
 
@@ -33,11 +33,9 @@ final class Framework
 	/**#@+ Nette Framework version identification */
 	const NAME = 'Nette Framework';
 
-	const VERSION = '0.9';
+	const VERSION = '0.8';
 
-	const REVISION = '398 released on 2009/07/02 01:05:24';
-
-	const PACKAGE = 'PHP 5.2';
+	const REVISION = '305 released on 2009/05/06 23:15:25';
 	/**#@-*/
 
 

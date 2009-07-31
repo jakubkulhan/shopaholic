@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Caching
- * @version    $Id: FileStorage.php 365 2009-06-23 20:55:06Z david@grudl.com $
+ * @version    $Id: FileStorage.php 232 2009-03-25 12:29:09Z david@grudl.com $
  */
 
 
@@ -185,25 +185,23 @@ class FileStorage extends Object implements ICacheStorage
 		}
 
 		if (!empty($dp[Cache::EXPIRE])) {
-			$expire = $dp[Cache::EXPIRE];
-			if (is_string($expire) && !is_numeric($expire)) {
-				$expire = strtotime($expire) - time();
-			} elseif ($expire > Tools::YEAR) {
-				$expire -= time();
+			$expire = (int) $dp[Cache::EXPIRE];
+			if ($expire <= Tools::YEAR) {
+				$expire += time();
 			}
-			if (empty($dp[Cache::SLIDING])) {
-				$meta[self::META_EXPIRE] = (int) $expire + time(); // absolute time
+			if (empty($dp[Cache::REFRESH])) {
+				$meta[self::META_EXPIRE] = $expire; // absolute time
 			} else {
-				$meta[self::META_DELTA] = (int) $expire; // sliding time
+				$meta[self::META_DELTA] = $expire - time(); // sliding time
 			}
 		}
 
-		if (!empty($dp[Cache::TAGS])) {
-			$meta[self::META_TAGS] = array_flip(array_values((array) $dp[Cache::TAGS]));
+		if (!empty($dp[Cache::TAGS]) && is_array($dp[Cache::TAGS])) {
+			$meta[self::META_TAGS] = array_flip(array_values($dp[Cache::TAGS]));
 		}
 
 		if (!empty($dp[Cache::ITEMS])) {
-			foreach ((array) $dp[Cache::ITEMS] as $item) {
+			foreach ($dp[Cache::ITEMS] as $item) {
 				$depFile = $this->getCacheFile($item);
 				$m = $this->readMeta($depFile, LOCK_SH);
 				$meta[self::META_ITEMS][$depFile] = $m[self::META_TIME];
@@ -286,7 +284,7 @@ class FileStorage extends Object implements ICacheStorage
 	 */
 	public function clean(array $conds)
 	{
-		$tags = isset($conds[Cache::TAGS]) ? array_flip((array) $conds[Cache::TAGS]) : array();
+		$tags = isset($conds[Cache::TAGS]) ? array_flip($conds[Cache::TAGS]) : array();
 
 		$priority = isset($conds[Cache::PRIORITY]) ? $conds[Cache::PRIORITY] : -1;
 
@@ -294,14 +292,8 @@ class FileStorage extends Object implements ICacheStorage
 
 		$now = time();
 
-		$iterator = dir(dirname($this->base . '-'));
-		if (!$iterator) return FALSE;
-		$rest = substr($this->base, strlen($iterator->path) + 1);
-
-		while (FALSE !== ($entry = $iterator->read())) {
-			if (strncmp($entry, $rest, strlen($rest))) continue;
-
-			$cacheFile = $iterator->path . '/' . $entry;
+		foreach (glob($this->base . '*') as $cacheFile)
+		{
 			if (!is_file($cacheFile)) continue;
 
 			do {

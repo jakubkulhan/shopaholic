@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Security
- * @version    $Id: AuthenticationException.php 303 2009-05-05 13:49:32Z david@grudl.com $
+ * @version    $Id: AuthenticationException.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -29,4 +29,11 @@
  */
 class AuthenticationException extends Exception
 {
+
+	/**#@+ @deprecated */
+	const IDENTITY_NOT_FOUND = 1;
+	const INVALID_CREDENTIAL = 2;
+	const FAILURE = 3;
+	/**#@-*/
+
 }

@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: ObjectMixin.php 303 2009-05-05 13:49:32Z david@grudl.com $
+ * @version    $Id: ObjectMixin.php 234 2009-03-26 21:19:54Z david@grudl.com $
  */
 
 
@@ -120,7 +120,7 @@ final class ObjectMixin
 			}
 			if ($name === NULL) return NULL;
 		}
-		
+
 		$class = strtolower($class);
 		$l = & self::$extMethods[strtolower($name)];
 

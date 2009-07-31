@@ -47,7 +47,8 @@ final class Front_OrderPresenter extends Front_BasePresenter
         }
 
         // redirect
-        $this->redirectUri(Environment::getHttpRequest()->getReferer()->getAbsoluteUri());
+        //$this->redirectUri(Environment::getHttpRequest()->getReferer()->getAbsoluteUri());
+        $this->redirect('showCart');
         $this->terminate();
         return ;
     }
@@ -99,7 +100,8 @@ final class Front_OrderPresenter extends Front_BasePresenter
         }
 
         // redirect
-        $this->redirectUri($request->getReferer()->getAbsoluteUri());
+        //$this->redirectUri($request->getReferer()->getAbsoluteUri());
+        $this->redirect('showCart');
         $this->terminate();
         return ;
     }
@@ -289,7 +291,8 @@ final class Front_OrderPresenter extends Front_BasePresenter
 
                 // submit
                 $form->setCurrentGroup(NULL);
-                $form->addSubmit('ok', __('Complete order »'));
+                $form->addSubmit('ok', '(3/3) ' . __('Complete order »'));
+                $form['ok']->setRendered(TRUE);
                 $form->onSubmit[] = array($this, 'onDataFormSubmit');
 
                 // defaults

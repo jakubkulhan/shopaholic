@@ -7,7 +7,7 @@
         <div class="column grid-2"><strong>{=$total}&thinsp;{=Environment::expand('%currency%')}</strong></div>
     </div>
     <div style="text-align: center; padding: 1px;">
-        <a class="next" href="{link Order:fillData}">{if isset($side->cart->data) && !empty($side->cart->data)}{=__('Change order data')}{else}{=__('Fill order data')}{/if} »</a>
+        <a class="next" href="{link Order:fillData}">(2/3) {if isset($side->cart->data) && !empty($side->cart->data)}{=__('Change order data')}{else}{=__('Fill order data')}{/if} »</a>
     </div>
 {else}
     <p style="text-align: center;">{=__('The cart is empty.')}</p>

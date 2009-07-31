@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Collections
- * @version    $Id: ArrayList.php 320 2009-05-25 15:07:17Z david@grudl.com $
+ * @version    $Id: ArrayList.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -70,7 +70,7 @@ class ArrayList extends Collection implements IList
 	 */
 	public function remove($item)
 	{
-		$this->updating();
+		$this->beforeRemove();
 
 		$index = $this->search($item);
 		if ($index === FALSE) {
@@ -167,13 +167,12 @@ class ArrayList extends Collection implements IList
 	 */
 	public function offsetUnset($index)
 	{
-		$this->updating();
-
 		$index -= $this->base;
 		if ($index < 0 || $index >= count($this)) {
 			throw new ArgumentOutOfRangeException;
 		}
 
+		$this->beforeRemove();
 		$data = $this->getArrayCopy();
 		array_splice($data, (int) $index, 1);
 		$this->setArray($data);

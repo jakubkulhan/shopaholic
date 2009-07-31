@@ -40,10 +40,12 @@ Environment::setVariable('themeBaseUri', Environment::expand('%baseUri%/themes/%
 Environment::setVariable('mediaDir', Environment::expand('%baseDir%/media'));
 Environment::setVariable('mediaBaseUri', Environment::expand('%baseUri%/media'));
 
+set_include_path(LIB_DIR . PATH_SEPARATOR . get_include_path());
 
 Html::$xhtml = FALSE;
 SafeStream::register();
-
+setlocale(LC_ALL, require Environment::expand('%localeFile%'));
+Zend_Search_Lucene::setDefaultSearchField('description');
 
 // configure locale
 require_once LIB_DIR . '/tr.php';
@@ -71,13 +73,25 @@ Route::setStyleProperty('action', Route::FILTER_TABLE, array(
     __('complete')  => 'complete',
     __('commit')    => 'commit'
 ));
-$router[] = new Route(__('order') . '/<action>/', array('presenter' => 'Front:Order'));
+$router[] = new Route(__('order') . '/<action>/', 
+    array('presenter' => 'Front:Order'));
 
-$router[] = new Route('admin/<presenter>/<action>/', array('module' => 'Back', 'presenter' => 'Dashboard', 'action' => 'default'));
+$router[] = new Route('admin/<presenter>/<action>/', 
+    array('module' => 'Back', 'presenter' => 'Dashboard', 'action' => 'default'));
+
+$router[] = new Route(__('search') . ' ? q=<q .*> & ' . __('page') . '=<page \d+>', 
+    array('presenter' => 'Front:Search', 'action' => 'default', 'page' => 1));
 
 Route::addStyle('path', NULL);
 Route::setStyleProperty('path', Route::PATTERN, '.*');
-$router[] = new Route('<path>/ ? ' . __('page') . '=<page_number \d+>', array('presenter' => 'Front:Show', 'action' => 'default', 'path' => '', 'page_number' => 1));
+$router[] = new Route('<path>/ ? ' . __('page') . '=<page_number \d+> & ' . __('letter') . '=<letter [A-Z]|#>', 
+    array(
+        'presenter' => 'Front:Show', 
+        'action' => 'default', 
+        'path' => '', 
+        'page_number' => 1,
+        'letter' => NULL
+    ));
 
 
 // run!

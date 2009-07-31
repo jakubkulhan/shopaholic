@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Loaders
- * @version    $Id: NetteLoader.php 351 2009-06-15 13:26:52Z david@grudl.com $
+ * @version    $Id: NetteLoader.php 260 2009-04-06 17:53:50Z david@grudl.com $
  */
 
 
@@ -44,6 +44,7 @@ class NetteLoader extends AutoLoader
 	/** @var array */
 	public $list = array(
 		'abortexception' => '/Application/AbortException.php',
+		'ajaxdriver' => '/Application/AjaxDriver.php',
 		'ambiguousserviceexception' => '/ServiceLocator.php',
 		'annotations' => '/Annotations.php',
 		'appform' => '/Application/AppForm.php',
@@ -84,7 +85,6 @@ class NetteLoader extends AutoLoader
 		'formgroup' => '/Forms/FormGroup.php',
 		'forwardingexception' => '/Application/ForwardingException.php',
 		'framework' => '/Framework.php',
-		'freezableobject' => '/FreezableObject.php',
 		'ftp' => '/Web/Ftp.php',
 		'ftpexception' => '/Web/Ftp.php',
 		'hashtable' => '/Collections/Hashtable.php',
@@ -93,6 +93,7 @@ class NetteLoader extends AutoLoader
 		'httprequest' => '/Web/HttpRequest.php',
 		'httpresponse' => '/Web/HttpResponse.php',
 		'httpuploadedfile' => '/Web/HttpUploadedFile.php',
+		'iajaxdriver' => '/Application/IAjaxDriver.php',
 		'iauthenticator' => '/Security/IAuthenticator.php',
 		'iauthorizator' => '/Security/IAuthorizator.php',
 		'icachestorage' => '/Caching/ICacheStorage.php',
@@ -112,7 +113,6 @@ class NetteLoader extends AutoLoader
 		'image' => '/Image.php',
 		'imagebutton' => '/Forms/Controls/ImageButton.php',
 		'imagemagick' => '/ImageMagick.php',
-		'imailer' => '/Mail/IMailer.php',
 		'imap' => '/Collections/IMap.php',
 		'inamingcontainer' => '/Forms/INamingContainer.php',
 		'instancefilteriterator' => '/InstanceFilterIterator.php',
@@ -137,12 +137,12 @@ class NetteLoader extends AutoLoader
 		'itemplate' => '/Templates/ITemplate.php',
 		'itranslator' => '/ITranslator.php',
 		'iuser' => '/Web/IUser.php',
+		'javascript' => '/Web/JavaScript.php',
+		'javascriptconsole' => '/Web/JavaScriptConsole.php',
 		'keynotfoundexception' => '/Collections/Hashtable.php',
 		'limitedscope' => '/Loaders/LimitedScope.php',
 		'link' => '/Application/Link.php',
 		'logger' => '/Logger.php',
-		'mail' => '/Mail/Mail.php',
-		'mailmimepart' => '/Mail/MailMimePart.php',
 		'memberaccessexception' => '/exceptions.php',
 		'memcachedstorage' => '/Caching/MemcachedStorage.php',
 		'multirouter' => '/Application/MultiRouter.php',
@@ -170,7 +170,6 @@ class NetteLoader extends AutoLoader
 		'rules' => '/Forms/Rules.php',
 		'safestream' => '/IO/SafeStream.php',
 		'selectbox' => '/Forms/Controls/SelectBox.php',
-		'sendmailmailer' => '/Mail/SendmailMailer.php',
 		'servicelocator' => '/ServiceLocator.php',
 		'session' => '/Web/Session.php',
 		'sessionnamespace' => '/Web/SessionNamespace.php',

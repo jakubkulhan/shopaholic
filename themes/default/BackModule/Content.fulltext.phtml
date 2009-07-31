@@ -1,0 +1,14 @@
+<p><b>{=__('Indexed documents')}</b>: {!$num_docs}</p>
+<p><b>{=__('Not updated documents')}</b>: {!$num_dirty}</p>
+
+{if !empty($update_now)}
+<hr>
+<p><b>{=__('Updated now')}</b>: {=count($update_now)} ({=implode(', ', $update_now)})</p>
+<p><b>{=__('Still not updated')}</b>: {=$num_dirty - count($update_now)}</p>
+<p><b>{=__('Next update after')}</b>: {$next_update}s</p>
+<hr>
+{/if}
+
+<div class="controls" style="text-align: center; padding: 20px;">
+    <a href="{link Content:optimizeFulltext}">✓&nbsp;{=__('Optimize fulltext')}</a>
+</div>

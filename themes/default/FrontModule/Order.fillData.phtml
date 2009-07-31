@@ -1,4 +1,15 @@
-{!$form}
-<!--<div class="next">
-    <a href="{link Order:complete}">{=__('Complete order')} »</a>
-</div>-->
+<?php $form->render('begin'); ?>
+<?php $form->render('errors'); ?>
+<?php $form['ok']->setRendered(TRUE); ?>
+<p class="info">Položky s tučným písmem jsou povinné.</p>
+<?php $form->render('body'); ?>
+<table>
+    <tr>
+        <th>&nbsp;</th>
+        <td>
+            <a class="next" href="{link Order:showCart}">« (1/3) {=__('Show cart')}</a>
+            <?php echo $form['ok']->control; ?>
+        </td>
+    <tr>
+</table>
+<?php $form->render('end'); ?>

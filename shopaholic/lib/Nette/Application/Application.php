@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Application
- * @version    $Id: Application.php 368 2009-06-25 14:26:59Z david@grudl.com $
+ * @version    $Id: Application.php 230 2009-03-19 12:16:22Z david@grudl.com $
  */
 
 
@@ -50,16 +50,16 @@ class Application extends Object
 	/** @var string */
 	public $errorPresenter;
 
-	/** @var array of function(Application $sender); Occurs before the application loads presenter */
+	/** @var array of function(Application $sender) */
 	public $onStartup;
 
-	/** @var array of function(Application $sender, \Exception $e = NULL); Occurs before the application shuts down */
+	/** @var array of function(Application $sender, \Exception $e = NULL) */
 	public $onShutdown;
 
-	/** @var array of function(Application $sender, PresenterRequest $request); Occurs when a new request is ready for dispatch */
+	/** @var array of function(Application $sender, PresenterRequest $request) */
 	public $onRequest;
 
-	/** @var array of function(Application $sender, \Exception $e); Occurs when an unhandled exception occurs in the application */
+	/** @var array of function(Application $sender, \Exception $e) */
 	public $onError;
 
 	/** @var array of string */
@@ -88,7 +88,7 @@ class Application extends Object
 		$httpResponse->setHeader('X-Powered-By', 'Nette Framework');
 
 		if (Environment::getVariable('baseUri') === NULL) {
-			Environment::setVariable('baseUri', $httpRequest->getUri()->getBasePath());
+			Environment::setVariable('baseUri', $httpRequest->getUri()->basePath);
 		}
 
 		// check HTTP method
@@ -142,11 +142,10 @@ class Application extends Object
 				$presenter = $request->getPresenterName();
 				try {
 					$class = $this->getPresenterLoader()->getPresenterClass($presenter);
-					$request->setPresenterName($presenter);
+					$request->modify('name', $presenter);
 				} catch (InvalidPresenterException $e) {
 					throw new BadRequestException($e->getMessage(), 404, $e);
 				}
-				$request->freeze();
 				$this->presenter = new $class($request);
 
 				// Instantiate topmost service locator
@@ -200,6 +199,7 @@ class Application extends Object
 						$httpResponse->setCode($e->getCode());
 					}
 					echo "<title>404 Not Found</title>\n\n<h1>Not Found</h1>\n\n<p>The requested URL was not found on this server.</p>";
+					break;
 
 				} else {
 					if (!$httpResponse->isSent()) {
@@ -208,9 +208,8 @@ class Application extends Object
 					Debug::processException($e, FALSE);
 					echo "<title>500 Internal Server Error</title>\n\n<h1>Server Error</h1>\n\n",
 						"<p>The server encountered an internal error and was unable to complete your request. Please try again later.</p>";
+					break;
 				}
-				echo "\n\n<hr>\n<small><i>Nette Framework</i></small>";
-				break;
 			}
 		} while (1);
 
@@ -317,36 +316,32 @@ class Application extends Object
 
 
 	/**
-	 * Stores current request to session.
-	 * @param  mixed  optional expiration time
-	 * @return string key
+	 * @return string
 	 */
-	public function storeRequest($expiration = '+ 10 minutes')
+	public function storeRequest()
 	{
 		$session = $this->getSession()->getNamespace('Nette.Application/requests');
 		do {
 			$key = substr(md5(lcg_value()), 0, 4);
-		} while (isset($session[$key]));
+		} while (isset($session->$key));
 
-		$session[$key] = end($this->requests);
-		$session->setExpiration($expiration, $key);
+		$session->$key = end($this->requests);
+		$session->setExpiration(10 * 60, 'requests');
 		return $key;
 	}
 
 
 
 	/**
-	 * Restores current request to session.
-	 * @param  string key
+	 * @param  string
 	 * @return void
 	 */
 	public function restoreRequest($key)
 	{
 		$session = $this->getSession()->getNamespace('Nette.Application/requests');
-		if (isset($session[$key])) {
-			$request = $session[$key];
-			unset($session[$key]);
-			$request->setFlag(PresenterRequest::RESTORED, TRUE);
+		if (isset($session->$key)) {
+			$request = $session->$key;
+			unset($session->$key);
 			throw new ForwardingException($request);
 		}
 	}

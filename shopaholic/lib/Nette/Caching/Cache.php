@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Caching
- * @version    $Id: Cache.php 365 2009-06-23 20:55:06Z david@grudl.com $
+ * @version    $Id: Cache.php 184 2009-01-07 17:45:11Z david@grudl.com $
  */
 
 
@@ -36,19 +36,13 @@ class Cache extends Object implements ArrayAccess
 	/**#@+ dependency */
 	const PRIORITY = 'priority';
 	const EXPIRE = 'expire';
-	const SLIDING = 'sliding';
+	const REFRESH = 'refresh';
 	const TAGS = 'tags';
 	const FILES = 'files';
 	const ITEMS = 'items';
 	const CONSTS = 'consts';
 	const ALL = 'all';
 	/**#@-*/
-
-	/** @deprecated */
-	const REFRESH = 'sliding';
-
-	/** @private */
-	const NAMESPACE_SEPARATOR = "\x00";
 
 	/** @var ICacheStorage */
 	private $storage;
@@ -67,11 +61,7 @@ class Cache extends Object implements ArrayAccess
 	public function __construct(ICacheStorage $storage, $namespace = NULL)
 	{
 		$this->storage = $storage;
-		$this->namespace = (string) $namespace;
-
-		if (strpos($this->namespace, self::NAMESPACE_SEPARATOR) !== FALSE) {
-			throw new InvalidArgumentException("Namespace name contains forbidden character.");
-		}
+		$this->namespace = $namespace == NULL ? '' : $namespace . "\x00";
 	}
 
 
@@ -112,13 +102,13 @@ class Cache extends Object implements ArrayAccess
 	/**
 	 * Writes item into the cache.
 	 * Dependencies are:
-	 * - Cache::PRIORITY => (int) priority
-	 * - Cache::EXPIRE => (timestamp) expiration
-	 * - Cache::SLIDING => (bool) use sliding expiration?
-	 * - Cache::TAGS => (array) tags
-	 * - Cache::FILES => (array|string) file names
-	 * - Cache::ITEMS => (array|string) cache items
-	 * - Cache::CONSTS => (array|string) cache items
+	 *       priority => (int) priority
+	 *       expire => (timestamp) expiration
+	 *       refresh => (bool) use sliding expiration?
+	 *       tags => (array) tags
+	 *       files => (array|string) file names
+	 *       items => (array|string) cache items
+	 *       consts => (array|string) cache items
 	 *
 	 * @param  string key
 	 * @param  mixed
@@ -134,17 +124,12 @@ class Cache extends Object implements ArrayAccess
 
 		$this->key = NULL;
 
-		if (isset($dependencies[self::ITEMS])) {
-			$dependencies[self::ITEMS] = (array) $dependencies[self::ITEMS];
-			foreach ($dependencies[self::ITEMS] as $k => $v) {
-				$dependencies[self::ITEMS][$k] = $this->namespace . self::NAMESPACE_SEPARATOR . $v;
-			}
-		}
+		$this->adjust($dependencies);
 
 		$this->storage->write(
-			$this->namespace . self::NAMESPACE_SEPARATOR . $key,
+			$this->namespace . $key,
 			$data,
-			(array) $dependencies
+			$dependencies
 		);
 	}
 
@@ -152,17 +137,41 @@ class Cache extends Object implements ArrayAccess
 
 	/**
 	 * Removes items from the cache by conditions.
-	 * Conditions are:
-	 * - Cache::PRIORITY => (int) priority
-	 * - Cache::TAGS => (array) tags
-	 * - Cache::ALL => TRUE
-	 *
 	 * @param  array
 	 * @return void
 	 */
 	public function clean(array $conds = NULL)
 	{
-		$this->storage->clean((array) $conds);
+		$this->adjust($conds);
+		$this->storage->clean($conds);
+	}
+
+
+
+	/**
+	 * Update dependencies array.
+	 * @param  array
+	 * @return void
+	 */
+	private function adjust(& $arr)
+	{
+		if ($arr === NULL) {
+			$arr = array();
+		}
+
+		if (isset($arr[self::TAGS])) {
+			$arr[self::TAGS] = (array) $arr[self::TAGS];
+			foreach ($arr[self::TAGS] as $key => $value) {
+				$arr[self::TAGS][$key] = $this->namespace . $value;
+			}
+		}
+
+		if (isset($arr[self::ITEMS])) {
+			$arr[self::ITEMS] = (array) $arr[self::ITEMS];
+			foreach ($arr[self::ITEMS] as $key => $value) {
+				$arr[self::ITEMS][$key] = $this->namespace . $value;
+			}
+		}
 	}
 
 
@@ -186,9 +195,9 @@ class Cache extends Object implements ArrayAccess
 
 		$this->key = $this->data = NULL;
 		if ($data === NULL) {
-			$this->storage->remove($this->namespace . self::NAMESPACE_SEPARATOR . $key);
+			$this->storage->remove($this->namespace . $key);
 		} else {
-			$this->storage->write($this->namespace . self::NAMESPACE_SEPARATOR . $key, $data, array());
+			$this->storage->write($this->namespace . $key, $data, array());
 		}
 	}
 
@@ -210,7 +219,7 @@ class Cache extends Object implements ArrayAccess
 			return $this->data;
 		}
 		$this->key = $key;
-		$this->data = $this->storage->read($this->namespace . self::NAMESPACE_SEPARATOR . $key);
+		$this->data = $this->storage->read($this->namespace . $key);
 		return $this->data;
 	}
 
@@ -229,7 +238,7 @@ class Cache extends Object implements ArrayAccess
 		}
 
 		$this->key = $key;
-		$this->data = $this->storage->read($this->namespace . self::NAMESPACE_SEPARATOR . $key);
+		$this->data = $this->storage->read($this->namespace . $key);
 		return $this->data !== NULL;
 	}
 
@@ -248,7 +257,7 @@ class Cache extends Object implements ArrayAccess
 		}
 
 		$this->key = $this->data = NULL;
-		$this->storage->remove($this->namespace . self::NAMESPACE_SEPARATOR . $key);
+		$this->storage->remove($this->namespace . $key);
 	}
 
 }

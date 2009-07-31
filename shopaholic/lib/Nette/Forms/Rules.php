@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: Rules.php 303 2009-05-05 13:49:32Z david@grudl.com $
+ * @version    $Id: Rules.php 271 2009-04-09 00:57:30Z david@grudl.com $
  */
 
 
@@ -87,6 +87,16 @@ final class Rules extends Object implements IteratorAggregate
 		}
 		$this->rules[] = $rule;
 		return $this;
+	}
+
+
+
+	/**
+	 * @deprecated
+	 */
+	public function addRuleFor()
+	{
+		throw new DeprecatedException('Method addRuleFor() is deprecated. Use addConditionOn() & addRule() construction.');
 	}
 
 

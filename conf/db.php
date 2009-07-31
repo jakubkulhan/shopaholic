@@ -6,6 +6,6 @@ return array(
     'password'  => 'shop',
     'database'  => 'shop',
     'substitutes' => array(
-        'prefix' => 'shopaholic_'
+        'prefix' => 'shop_'
     )
 );

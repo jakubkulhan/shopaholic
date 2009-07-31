@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: SelectBox.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: SelectBox.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -30,11 +30,6 @@ require_once dirname(__FILE__) . '/../../Forms/Controls/FormControl.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Forms
- *
- * @property-read mixed $rawValue
- * @property   array $items
- * @property-read mixed $selectedItem
- * @property-read bool $firstSkipped
  */
 class SelectBox extends FormControl
 {
@@ -57,7 +52,7 @@ class SelectBox extends FormControl
 	 * @param  array   items from which to choose
 	 * @param  int     number of rows that should be visible
 	 */
-	public function __construct($label = NULL, array $items = NULL, $size = NULL)
+	public function __construct($label, array $items = NULL, $size = NULL)
 	{
 		parent::__construct($label);
 		$this->control->setName('select');

@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: SubmitButton.php 368 2009-06-25 14:26:59Z david@grudl.com $
+ * @version    $Id: SubmitButton.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -32,16 +32,13 @@ require_once dirname(__FILE__) . '/../../Forms/ISubmitterControl.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Forms
- *
- * @property   mixed $validationScope
- * @property-read bool $submittedBy
  */
 class SubmitButton extends Button implements ISubmitterControl
 {
-	/** @var array of function(SubmitButton $sender); Occurs when the button is clicked and form is successfully validated */
+	/** @var array of event handlers; Occurs when the button is clicked and form is successfully validated; function(SubmitButton $sender) */
 	public $onClick;
 
-	/** @var array of function(SubmitButton $sender); Occurs when the button is clicked and form is not validated */
+	/** @var array of event handlers; Occurs when the button is clicked and form is not validated; function(SubmitButton $sender) */
 	public $onInvalidClick;
 
 	/** @var mixed */
@@ -52,7 +49,7 @@ class SubmitButton extends Button implements ISubmitterControl
 	/**
 	 * @param  string  caption
 	 */
-	public function __construct($caption = NULL)
+	public function __construct($caption)
 	{
 		parent::__construct($caption);
 		$this->control->type = 'submit';

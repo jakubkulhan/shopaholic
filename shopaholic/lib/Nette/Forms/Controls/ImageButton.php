@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: ImageButton.php 315 2009-05-24 21:20:42Z david@grudl.com $
+ * @version    $Id: ImageButton.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -38,7 +38,7 @@ class ImageButton extends SubmitButton
 	 * @param  string  URI of the image
 	 * @param  string  alternate text for the image
 	 */
-	public function __construct($src = NULL, $alt = NULL)
+	public function __construct($src, $alt)
 	{
 		parent::__construct(NULL);
 		$this->control->type = 'image';

@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Web
- * @version    $Id: Session.php 309 2009-05-11 00:11:08Z david@grudl.com $
+ * @version    $Id: Session.php 306 2009-05-08 10:56:50Z david@grudl.com $
  */
 
 
@@ -55,7 +55,7 @@ class Session extends Object
 
 		// cookies
 		'session.cookie_lifetime' => 0,   // until the browser is closed
-		'session.cookie_path' => '/',     // cookie is available within the entire domain
+		'session.cookie_path' => '/',    // cookie is available within the entire domain
 		'session.cookie_domain' => '',    // cookie is available on current subdomain only
 		'session.cookie_secure' => FALSE, // cookie is available on HTTP & HTTPS
 		'session.cookie_httponly' => TRUE,// must be enabled to prevent Session Fixation
@@ -162,11 +162,8 @@ class Session extends Object
 			// expire namespace variables
 			foreach ($_SESSION['__NM'] as $namespace => $metadata) {
 				if (isset($metadata['EXP'])) {
-					foreach ($metadata['EXP'] as $variable => $value) {
-						if (!is_array($value)) $value = array($value, !$value); // back compatibility
-
-						list($time, $whenBrowserIsClosed) = $value;
-						if (($whenBrowserIsClosed && $browserClosed) || ($time && $now > $time)) {
+					foreach ($metadata['EXP'] as $variable => $time) {
+						if ((!$time && $browserClosed) || ($time && $now > $time)) {
 							if ($variable === '') { // expire whole namespace
 								unset($_SESSION['__NM'][$namespace], $_SESSION['__NS'][$namespace]);
 								continue 2;
@@ -258,6 +255,17 @@ class Session extends Object
 		} else {
 			$this->regenerationNeeded = TRUE;
 		}
+	}
+
+
+
+	/**
+	 * Sets the session ID to a specified one.
+	 * @deprecated
+	 */
+	public function setId($id)
+	{
+		throw new DeprecatedException('Method '.__METHOD__.'() is deprecated.');
 	}
 
 

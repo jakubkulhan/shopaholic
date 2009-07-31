@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Web
- * @version    $Id: UriScript.php 363 2009-06-22 14:27:11Z david@grudl.com $
+ * @version    $Id: UriScript.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -46,41 +46,11 @@ require_once dirname(__FILE__) . '/../Web/Uri.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Web
- *
- * @property   string $scriptPath
- * @property-read string $basePath
- * @property-read string $baseUri
- * @property-read string $relativeUri
- * @property-read string $pathInfo
  */
 class UriScript extends Uri
 {
 	/** @var string */
-	private $scriptPath = '';
-
-
-
-	/**
-	 * Sets the script-path part of URI.
-	 * @param  string
-	 * @return void
-	 */
-	public function setScriptPath($value)
-	{
-		$this->updating();
-		$this->scriptPath = (string) $value;
-	}
-
-
-
-	/**
-	 * Returns the script-path part of URI.
-	 * @return string
-	 */
-	public function getScriptPath()
-	{
-		return $this->scriptPath;
-	}
+	public $scriptPath;
 
 
 
@@ -90,7 +60,7 @@ class UriScript extends Uri
 	 */
 	public function getBasePath()
 	{
-		return (string) substr($this->scriptPath, 0, strrpos($this->scriptPath, '/') + 1);
+		return substr($this->scriptPath, 0, strrpos($this->scriptPath, '/') + 1);
 	}
 
 

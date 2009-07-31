@@ -27,4 +27,29 @@ abstract class Front_BasePresenter extends /*Nette\Application\*/Presenter
 
         $this->template->side = (object) $side;
     }
+
+    public function createComponent($name)
+    {
+        switch ($name) {
+            case 'searchForm':
+                $form = new AppForm($this, $name);
+                $form->addText('q', __('Query:'));
+                $form['q']->getControlPrototype()->onclick(
+                    'if (this.value === "' . __('Input search keywords') . '") {
+                        this._default = this.value;
+                        this.value = "";
+                    }');
+                $form['q']->getControlPrototype()->onblur(
+                    'if (this.value === "" && this._default !== undefined) {
+                        this.value = this._default;
+                    }');
+                $form->setAction($this->link('Search:default'));
+                $form->setMethod('get');
+                $form->setDefaults(array('q' => __('Input search keywords')));
+            break;
+
+            default:
+                return parent::createComponent($name);
+        }
+    }
 }

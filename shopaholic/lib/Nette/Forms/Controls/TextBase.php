@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: TextBase.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: TextBase.php 234 2009-03-26 21:19:54Z david@grudl.com $
  */
 
 
@@ -30,8 +30,6 @@ require_once dirname(__FILE__) . '/../../Forms/Controls/FormControl.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Forms
- *
- * @property   string $emptyValue
  */
 abstract class TextBase extends FormControl
 {

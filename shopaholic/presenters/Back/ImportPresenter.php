@@ -6,6 +6,11 @@ final class Back_ImportPresenter extends Back_BasePresenter
         $this->template->form = $this->getComponent('importForm');
     }
 
+    public function renderManufacturers()
+    {
+        $this->template->form = $this->getComponent('importManufacturersForm');
+    }
+
     public function createComponent($name)
     {
         switch ($name) {
@@ -29,6 +34,14 @@ final class Back_ImportPresenter extends Back_BasePresenter
                 $form->addSubmit('ok', '✔ ' . __('Import'));
                 $form->setDefaults(array('provision' => 0, 'update_only' => TRUE));
                 $form->onSubmit[] = array($this, 'onImportFormSubmit');
+            break;
+
+            case 'importManufacturersForm':
+                $form = new AppForm($this, $name);
+                $form->addFile('file', __('File:'))
+                    ->addRule(Form::FILLED, __('You have to entry file.'));
+                $form->addSubmit('ok', '✔ ' . __('Import'));
+                $form->onSubmit[] = array($this, 'onImportManufacturersFormSubmit');
             break;
 
             default:
@@ -140,5 +153,33 @@ final class Back_ImportPresenter extends Back_BasePresenter
         // all done
         $this->redirect('this');
         $this->terminate();
+    }
+
+    public function onImportManufacturersFormSubmit(Form $form)
+    {
+        if (!$form->isValid()) {
+            return ;
+        }
+
+        // read imported manufacturers
+        if (!($handle = @fopen('safe://' . $form['file']->getValue()->getTemporaryFile(), 'r'))) {
+            $form->addError(__('Cannot read file.'));
+            return ;
+        }
+
+        $import = array();
+        while (($_ = fgetcsv($handle)) !== FALSE) {
+            $manufacturer = array();
+            list(/* id */, $manufacturer['name'], $manufacturer['nice_name']) = $_;
+            $import[] = $manufacturer;
+        }
+        fclose($handle);
+
+        // import them
+        foreach ($import as $manufacturer) {
+            if (($_ = mapper::manufacturers()->findByNiceName($manufacturer['nice_name'])) === NULL) {
+                mapper::manufacturers()->insertOne($manufacturer);
+            }
+        }
     }
 }

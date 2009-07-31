@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: Object.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: Object.php 230 2009-03-19 12:16:22Z david@grudl.com $
  */
 
 
@@ -65,9 +65,6 @@ require_once dirname(__FILE__) . '/ObjectMixin.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette
- *
- * @property-read string $class
- * @property-read ReflectionObject $reflection
  */
 abstract class Object
 {

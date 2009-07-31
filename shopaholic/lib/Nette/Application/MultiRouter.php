@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Application
- * @version    $Id: MultiRouter.php 313 2009-05-18 17:38:47Z david@grudl.com $
+ * @version    $Id: MultiRouter.php 185 2009-01-09 00:22:52Z david@grudl.com $
  */
 
 
@@ -35,15 +35,11 @@ require_once dirname(__FILE__) . '/../Collections/ArrayList.php';
  */
 class MultiRouter extends ArrayList implements IRouter
 {
+	/** @var string  type (class, interface, PHP type) */
+	protected $itemType = 'IRouter';
+
 	/** @var array {@link MultiRouter::constructUrl()} */
 	private $cachedRoutes;
-
-
-
-	public function __construct()
-	{
-		parent::__construct(NULL, 'IRouter');
-	}
 
 
 

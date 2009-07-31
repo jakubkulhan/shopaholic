@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Templates
- * @version    $Id: CurlyBracketsFilter.php 398 2009-07-01 23:05:24Z david@grudl.com $
+ * @version    $Id: CurlyBracketsFilter.php 299 2009-05-04 16:33:02Z david@grudl.com $
  */
 
 
@@ -25,7 +25,7 @@ require_once dirname(__FILE__) . '/../../Object.php';
 
 
 /**
- * Template compile-time filter curlyBrackets supports for {...} in template.
+ * Template filter curlyBrackets: support for {...} in template.
  *
  * - {$variable} with escaping
  * - {!$variable} without escaping
@@ -37,6 +37,7 @@ require_once dirname(__FILE__) . '/../../Object.php';
  * - {!_expression} echo translation without escaping
  * - {link destination ...} control link
  * - {plink destination ...} presenter link
+ * - {ajaxlink destination ...} ajax link
  * - {if ?} ... {elseif ?} ... {else} ... {/if} // or <%else%>, <%/if%>, <%/foreach%> ?
  * - {for ?} ... {/for}
  * - {foreach ?} ... {/foreach}
@@ -44,10 +45,9 @@ require_once dirname(__FILE__) . '/../../Object.php';
  * - {cache ?} ... {/cache} cached block
  * - {snippet ?} ... {/snippet ?} control snippet
  * - {attr ?} HTML element attributes
- * - {block|texy} ... {/block} block
+ * - {block|texy} ... {/block} capture of filter block
  * - {contentType ...} HTTP Content-Type header
  * - {assign $var value} set template parameter
- * - {dump $var}
  * - {debugbreak}
  *
  * @author     David Grudl
@@ -56,21 +56,16 @@ require_once dirname(__FILE__) . '/../../Object.php';
  */
 class CurlyBracketsFilter extends Object
 {
-	/** single & double quoted PHP string */
-	const RE_STRING = '\'(?:\\\\.|[^\'\\\\])*\'|"(?:\\\\.|[^"\\\\])*"';
-
-	/** PHP identifier */
-	const RE_IDENTIFIER = '[_a-zA-Z\x7F-\xFF][_a-zA-Z0-9\x7F-\xFF]*';
 
 	/** @var array */
-	public static $defaultMacros = array(
+	public static $macros = array(
 		'block' => '<?php %:macroBlock% ?>',
 		'/block' => '<?php %:macroBlockEnd% ?>',
 
-		'snippet' => '<?php } if ($_cb->foo = SnippetHelper::create($control%:macroSnippet%)) { $_cb->snippets[] = $_cb->foo; ?>',
+		'snippet' => '<?php } if ($_cb->foo = $template->snippet($control%:macroSnippet%)) { $_cb->snippets[] = $_cb->foo; ?>',
 		'/snippet' => '<?php array_pop($_cb->snippets)->finish(); } if (SnippetHelper::$outputAllowed) { ?>',
 
-		'cache' => '<?php if ($_cb->foo = CachingHelper::create($_cb->key = md5(__FILE__) . __LINE__, $template->getFile(), array(%%))) { $_cb->caches[] = $_cb->foo; ?>',
+		'cache' => '<?php if ($_cb->foo = $template->cache($_cb->key = md5(__FILE__) . __LINE__, $template->getFile(), array(%%))) { $_cb->caches[] = $_cb->foo; ?>',
 		'/cache' => '<?php array_pop($_cb->caches)->save(); } if (!empty($_cb->caches)) end($_cb->caches)->addItem($_cb->key); ?>',
 
 		'if' => '<?php if (%%): ?>',
@@ -83,44 +78,35 @@ class CurlyBracketsFilter extends Object
 		'/for' => '<?php endfor ?>',
 		'while' => '<?php while (%%): ?>',
 		'/while' => '<?php endwhile ?>',
-		'continueIf' => '<?php if (%%) continue ?>',
-		'breakIf' => '<?php if (%%) break ?>',
 
 		'include' => '<?php %:macroInclude% ?>',
 		'extends' => '<?php %:macroExtends% ?>',
 
+		'ajaxlink' => '<?php echo %:macroEscape%(%:macroAjaxlink%) ?>',
 		'plink' => '<?php echo %:macroEscape%(%:macroPlink%) ?>',
 		'link' => '<?php echo %:macroEscape%(%:macroLink%) ?>',
 		'ifCurrent' => '<?php %:macroIfCurrent%; if ($presenter->getLastCreatedRequestFlag("current")): ?>',
-		'widget' => '<?php %:macroWidget% ?>',
 
 		'attr' => '<?php echo Html::el(NULL)->%:macroAttr%attributes() ?>',
 		'contentType' => '<?php %:macroContentType% ?>',
-		'assign' => '<?php %:macroAssign% ?>', // deprecated?
-		'dump' => '<?php Debug::consoleDump(%:macroDump%, "Template " . str_replace(Environment::getVariable("templatesDir"), "\xE2\x80\xA6", $template->getFile())) ?>',
+		'assign' => '<?php %:macroAssign% ?>',
 		'debugbreak' => '<?php if (function_exists("debugbreak")) debugbreak() ?>',
 
-		'!_' => '<?php echo $template->translate(%:formatModifiers%) ?>',
-		'!=' => '<?php echo %:formatModifiers% ?>',
-		'_' => '<?php echo %:macroEscape%($template->translate(%:formatModifiers%)) ?>',
-		'=' => '<?php echo %:macroEscape%(%:formatModifiers%) ?>',
+		'!_' => '<?php echo $template->translate(%:macroModifiers%) ?>',
+		'!=' => '<?php echo %:macroModifiers% ?>',
+		'_' => '<?php echo %:macroEscape%($template->translate(%:macroModifiers%)) ?>',
+		'=' => '<?php echo %:macroEscape%(%:macroModifiers%) ?>',
 		'!$' => '<?php echo %:macroVar% ?>',
-		'!' => '<?php echo %:macroVar% ?>', // deprecated
+		'!' => '<?php echo %:macroVar% ?>',
 		'$' => '<?php echo %:macroEscape%(%:macroVar%) ?>',
-		'?' => '<?php %:formatModifiers% ?>', // deprecated?
+		'?' => '<?php %:macroModifiers% ?>',
 	);
-
-	/** @var array */
-	public $macros;
 
 	/** @var array */
 	private $blocks = array();
 
 	/** @var array */
 	private $namedBlocks = array();
-
-	/** @var bool */
-	private $extends;
 
 	/** @var string */
 	private $context, $escape, $tag;
@@ -138,22 +124,13 @@ class CurlyBracketsFilter extends Object
 
 	/**
 	 * Invokes filter.
-	 * @deprecated
+	 * @param  string
+	 * @return string
 	 */
 	public static function invoke($s)
 	{
 		$filter = new self;
 		return $filter->__invoke($s);
-	}
-
-
-
-	/**
-	 * Constructor.
-	 */
-	public function __construct()
-	{
-		$this->macros = self::$defaultMacros;
 	}
 
 
@@ -167,7 +144,6 @@ class CurlyBracketsFilter extends Object
 	{
 		$this->blocks = array();
 		$this->namedBlocks = array();
-		$this->extends = FALSE;
 
 		// context-aware escaping
 		$this->context = self::CONTEXT_TEXT;
@@ -178,6 +154,7 @@ class CurlyBracketsFilter extends Object
 		$s = preg_replace('#\\{\\*.*?\\*\\}[\r\n]*#s', '', $s);
 
 		// snippets support (temporary solution)
+		$s = "<?php\nif (SnippetHelper::\$outputAllowed) {\n?>\n$s<?php\n}\n?>"; // \n$s is required by following RE
 		$s = preg_replace(
 			'#@(\\{[^}]+?\\})#s',
 			'<?php } ?>$1<?php if (SnippetHelper::\\$outputAllowed) { ?>',
@@ -185,54 +162,30 @@ class CurlyBracketsFilter extends Object
 		);
 
 		// process all {tags} and <tags/>
-		$s = preg_replace_callback(
-			'~
+		$s = preg_replace_callback('~
 				<(/?)([a-z]+)|                          ## 1,2) start tag: <tag </tag ; ignores <!-- <!DOCTYPE
 				(>)|                                    ## 3) end tag
 				(?<=\\s)(style|on[a-z]+)\s*=\s*(["\'])| ## 4,5) attribute
 				(["\'])|                                ## 6) attribute delimiter
-				(\n[ \t]*)?\\{([^\\s\'"{}]              ## 7,8) indent & macro begin
-					(?>'.self::RE_STRING.'|[^\'"}]+)    ##   + single or double quoted string, chars
-					*)\\}([\ \t]*(?=\r|\n))?            ##   + 9) newline
+				(\n[ \t]*)?\\{([^\\s\'"{}][^}]*?)(\\|[a-z](?:[^\'"}\s|]+|\\|[a-z]|\'[^\']*\'|"[^"]*")*)?\\}([ \t]*(?=\r|\n))? ## 7,8,9,10) indent & macro & modifiers & newline
 			~xsi',
 			array($this, 'cbContent'),
-			"\n" . $s
+			$s
 		);
-
-		// blocks closing check
-		if (count($this->blocks) === 1) { // auto-close last block
-			$s .= $this->macro('/block', '', '');
-
-		} elseif ($this->blocks) {
-			throw new InvalidStateException("There are some unclosed blocks.");
-		}
-
-		// snippets support (temporary solution)
-		$s = "<?php\nif (SnippetHelper::\$outputAllowed) {\n?>$s<?php\n}\n?>";
-
-		// extends support
-		$s = "<?php\n"
-			. 'if ($_cb->extends) { ob_start(); }' . "\n"
-			. '?>' . $s . "<?php\n"
-			. 'if ($_cb->extends) { ob_end_clean(); $template->subTemplate($_cb->extends, get_defined_vars())->render(); }' . "\n";
 
 		// named blocks
 		if ($this->namedBlocks) {
 			foreach (array_reverse($this->namedBlocks, TRUE) as $name => $foo) {
-				$name = preg_quote($name, '#');
-				$s = preg_replace_callback("#{block($name)} \?>(.*)<\?php {/block$name}#sU", array($this, 'cbNamedBlocks'), $s);
+				$s = preg_replace_callback("#{block\#($name)} \?>(.*)<\?php {/block\#$name}#sU", array($this, 'cbNamedBlocks'), $s);
 			}
-			$s = "<?php\n\n" . implode("\n\n\n", $this->namedBlocks) . "\n\n?>" . $s;
+			preg_match('#function (\S+)\(#', reset($this->namedBlocks), $m);
+			$s = "<?php\nif (!function_exists('$m[1]')) {\n\n" . implode("\n\n\n", $this->namedBlocks) . "\n\n} ?>" . $s;
 		}
 
 		// internal state holder
-		$s = "<?php\n"
+		$s = "<?php "
 			
-			. 'if (!isset($_cb)) $_cb = (object) NULL;' . "\n"
-			. '$_cb->extends = ' . ($this->extends ? 'TRUE' : 'empty($template->layout) ? FALSE : $template->layout') . ";\n"
-			. "unset(\$layout, \$template->layout, \$template->_cb);\n"
-			. 'if (!empty($_cb->caches)) end($_cb->caches)->addFile($template->getFile());' . "\n"
-			. '?>' . $s;
+			. "\$_cb = CurlyBracketsFilter::initState(\$template) ?>" . $s;
 
 		return $s;
 	}
@@ -251,24 +204,21 @@ class CurlyBracketsFilter extends Object
 		//    [5] => '"
 		//    [6] => '"
 		//    [7] => indent
-		//    [8] => {macro...}
-		//    [9] => newline?
+		//    [8] => {macro
+		//    [9] => {...|modifiers}
+		//    [10] => newline?
 
 		if (!empty($matches[8])) { // {macro|var|modifiers}
-			list(, , , , , , , $indent, $macro) = $matches;
-
-			if (preg_match('#^(.*?)(\\|[a-z](?:'.self::RE_STRING.'|[^\'"\s]+)*)$#i', $macro, $m)) {
-				list(, $macro, $modifiers) = $m;
-			}
-
-			foreach ($this->macros as $key => $val) {
+			$matches[] = NULL;
+			list(, , , , , , , $indent, $macro, $modifiers) = $matches;
+			foreach (self::$macros as $key => $val) {
 				if (strncmp($macro, $key, strlen($key)) === 0) {
 					$var = substr($macro, strlen($key));
 					if (preg_match('#[a-zA-Z0-9]$#', $key) && preg_match('#^[a-zA-Z0-9._-]#', $var)) {
 						continue;
 					}
-					$result = $this->macro($key, trim($var), isset($modifiers) ? $modifiers : '');
-					$nl = isset($matches[9]) ? "\n" : ''; // double newline
+					$result = $this->macro($key, trim($var), $modifiers);
+					$nl = isset($matches[10]) ? "\n" : ''; // double newline
 					if ($nl && $indent && strncmp($result, '<?php echo ', 11)) {
 						return "\n" . $result; // remove indent, single newline
 					} else {
@@ -331,7 +281,7 @@ class CurlyBracketsFilter extends Object
 	public function macro($macro, $var, $modifiers)
 	{
 		$this->_cbMacro = array($var, $modifiers);
-		return preg_replace_callback('#%(.*?)%#', array($this, 'cbMacro'), $this->macros[$macro]);
+		return preg_replace_callback('#%(.*?)%#', array($this, 'cbMacro'), self::$macros[$macro]);
 	}
 
 
@@ -366,7 +316,7 @@ class CurlyBracketsFilter extends Object
 	 */
 	private function macroVar($var, $modifiers)
 	{
-		return $this->formatModifiers('$' . $var, $modifiers);
+		return $this->macroModifiers('$' . $var, $modifiers);
 	}
 
 
@@ -376,42 +326,30 @@ class CurlyBracketsFilter extends Object
 	 */
 	private function macroInclude($var, $modifiers)
 	{
-		$destination = $this->fetchToken($var); // destination [,] [params]
-		$params = $this->formatArray($var) . ($var ? ' + ' : '');
+		if (substr($var, 0, 1) === '#') {
+			preg_match('#^.([^\s,]+),?\s*(.*)$()#', $var, $m); // #name[,] [params]
+			list(, $name, $params) = $m;
 
-		if ($destination === NULL) {
-			throw new InvalidStateException("Missing destination in {include}.");
-
-		} elseif ($destination[0] === '#') { // include #block
-			if (!preg_match('#^\\#'.self::RE_IDENTIFIER.'$#', $destination)) {
-				throw new InvalidStateException("Included block name must be alphanumeric string, '$destination' given.");
+			if (!preg_match('#^[a-zA-Z0-9_]+$#', $name)) {
+				throw new InvalidStateException("Included block name must be alphanumeric string, '$name' given.");
 			}
 
-			$parent = $destination === '#parent';
-			if ($destination === '#parent' || $destination === '#this') {
+			$params = ($params ? "array($params) + " : '') . '$template->getParams()'; // or get_defined_vars() ?
+			$cmd = $name === 'parent' ? 'next' : 'reset';
+			if ($name === 'parent' || $name === 'this') {
 				$item = end($this->blocks);
 				while ($item && $item[0][0] !== '#') $item = prev($this->blocks);
 				if (!$item) {
 					throw new InvalidStateException("Cannot include $name block outside of any block.");
 				}
-				$destination = $item[0];
+				$name = substr($item[0], 1);
 			}
-			$name = var_export($destination, TRUE);
-			$params .= 'get_defined_vars()';
-			$cmd = isset($this->namedBlocks[$destination]) && !$parent
-				? "call_user_func(reset(\$_cb->blks[$name]), $params)"
-				: "CurlyBracketsFilter::callBlock" . ($parent ? 'Parent' : '') . "(\$_cb->blks, $name, $params)";
-			return $modifiers
-				? "ob_start(); $cmd; echo " . $this->formatModifiers('ob_get_clean()', $modifiers)
-				: $cmd;
-
-		} else { // include "file"
-			$destination = $this->formatString($destination);
-			$params .= '$template->getParams()';
-			return $modifiers
-				? 'echo ' . $this->formatModifiers('$template->subTemplate(' . $destination . ', ' . $params . ')->__toString(TRUE)', $modifiers)
-				: '$template->subTemplate(' . $destination . ', ' . $params . ')->render()';
+			$name = var_export($name, TRUE);
+			$cmd = "call_user_func($cmd(\$_cb->blks[$name]), $params)";
+			return $modifiers ? $this->macroBlock('', $modifiers) . $cmd . ";" . $this->macroBlockEnd(NULL) : $cmd;
 		}
+
+		return 'echo ' . $this->macroModifiers('$template->subTemplate(' . $this->formatVars($var) . ')->__toString(TRUE)', $modifiers);
 	}
 
 
@@ -421,12 +359,7 @@ class CurlyBracketsFilter extends Object
 	 */
 	private function macroExtends($var)
 	{
-		$destination = $this->fetchToken($var); // destination
-		if ($destination === NULL) {
-			throw new InvalidStateException("Missing destination in {extends}.");
-		}
-		$this->extends = TRUE;
-		return 'if (!($_cb->extends = ' . $this->formatString($destination) . ')) throw new Exception("Empty destination in {extends}")';
+		return $this->macroInclude($var, '') . '; return';
 	}
 
 
@@ -436,36 +369,26 @@ class CurlyBracketsFilter extends Object
 	 */
 	private function macroBlock($var, $modifiers)
 	{
-		$name = $this->fetchToken($var); // block [,] [params]
-
-		if ($name === NULL) { // anonymous block
-			$this->blocks[] = array('', $modifiers);
-			return $modifiers === '' ? '' : 'ob_start()';
-
-		} elseif ($name[0] === '#') { // #block
-			if (!preg_match('#^\\#'.self::RE_IDENTIFIER.'$#', $name)) {
+		if (substr($var, 0, 1) === '#') { // named block
+			$name = substr($var, 1);
+			if (!preg_match('#^[a-zA-Z0-9_]+$#', $name)) {
 				throw new InvalidStateException("Block name must be alphanumeric string, '$name' given.");
 
 			} elseif (isset($this->namedBlocks[$name])) {
 				throw new InvalidStateException("Cannot redeclare block '$name'.");
 			}
 
-			$top = empty($this->blocks);
 			$this->namedBlocks[$name] = $name;
-			$this->blocks[] = array($name, '');
-			if (!$top) {
-				return $this->macroInclude($name, $modifiers) . "{block$name}";
-
-			} elseif ($this->extends) {
-				return "{block$name}";
-
-			} else {
-				return 'if (!$_cb->extends) { ' . $this->macroInclude($name, $modifiers) . "; } {block$name}";
-			}
-
-		} else {
-			throw new InvalidStateException("Invalid block parameter '$name'.");
+			$this->blocks[] = array($var, '');
+			return $this->macroInclude($var, $modifiers) . "{block#$name}";
 		}
+
+		if ($var === '' || $var[0] === '$') { // capture or modifier
+			$this->blocks[] = array($var, $modifiers);
+			return ($var === '' && $modifiers === '') ? '' : 'ob_start(); try {';
+		}
+
+		throw new InvalidStateException("Invalid block parameter '$var'.");
 	}
 
 
@@ -473,18 +396,21 @@ class CurlyBracketsFilter extends Object
 	/**
 	 * {/block ...}
 	 */
-	private function macroBlockEnd($var)
+	private function macroBlockEnd($optVar)
 	{
-		list($name, $modifiers) = array_pop($this->blocks);
+		list($var, $modifiers) = array_pop($this->blocks);
 
-		if ($name === NULL || ($var && $var !== $name)) { // $name === NULL means $this->blocks is empty
+		if ($optVar && $optVar !== $var) {
 			throw new InvalidStateException("Tag {/block $var} was not expected here.");
 
-		} elseif (substr($name, 0, 1) === '#') { // #block
-			return "{/block$name}";
+		} elseif (substr($var, 0, 1) === '#') { // named block
+			return "{/block$var}";
 
-		} else { // anonymous block
-			return $modifiers === '' ? '' : 'echo ' . $this->formatModifiers('ob_get_clean()', $modifiers);
+		} else { // capture or modifier
+			return ($var === '' && $modifiers === '') ? ''
+				: '} catch (Exception $_e) { ob_end_clean(); throw $_e; } '
+				. ($var === '' ? 'echo ' : $var . '=')
+				. $this->macroModifiers('ob_get_clean()', $modifiers);
 		}
 	}
 
@@ -496,9 +422,9 @@ class CurlyBracketsFilter extends Object
 	private function cbNamedBlocks($matches)
 	{
 		list(, $name, $content) = $matches;
-		$func = '_cbb' . substr(md5(uniqid($name)), 0, 10) . '_' . preg_replace('#[^a-z0-9_]#i', '_', $name);
+		$func = '_cbb' . substr(md5(uniqid($name)), 0, 15) . '_' . $name;
 		$this->namedBlocks[$name] = "\$_cb->blks[" . var_export($name, TRUE) . "][] = '$func';\n"
-			. "if (!function_exists('$func')) { function $func() { extract(func_get_arg(0)) // block $name\n?>$content<?php\n}}";
+			. "function $func() { extract(func_get_arg(0)) // block #$name\n?>$content<?php\n}";
 		return '';
 	}
 
@@ -545,10 +471,6 @@ class CurlyBracketsFilter extends Object
 			$this->escape = 'TemplateHelpers::escapeCss';
 			$this->context = self::CONTEXT_NONE;
 
-		} elseif (strpos($var, 'plain') !== FALSE) {
-			$this->escape = '';
-			$this->context = self::CONTEXT_NONE;
-
 		} else {
 			$this->escape = '$template->escape';
 			$this->context = self::CONTEXT_NONE;
@@ -561,41 +483,14 @@ class CurlyBracketsFilter extends Object
 
 
 	/**
-	 * {dump ...}
-	 */
-	private function macroDump($var)
-	{
-		return $var ? "array('$var' => $var)" : 'get_defined_vars()';
-	}
-
-
-
-	/**
 	 * {snippet ...}
 	 */
 	private function macroSnippet($var)
 	{
-		$args = array('');
-		if ($snippet = $this->fetchToken($var)) {  // [name [,]] [tag]
-			$args[] = $this->formatString($snippet, TRUE);
+		if (preg_match('#^([^\s,]+),?\s*(.*)$#', $var, $m)) { // [name[,]] [tag]
+			$var = ', "' . $m[1] . '"' . ($m[2] ? ', ' . var_export($m[2], TRUE) : '');
 		}
-		if ($var) {
-			$args[] = $this->formatString($var, TRUE);
-		}
-		return implode(', ', $args);
-	}
-
-
-
-	/**
-	 * {widget ...}
-	 */
-	private function macroWidget($var, $modifiers)
-	{
-		// TODO: add support for $modifiers
-		$pair = explode(':', $this->fetchToken($var), 2);
-		$pair[1] = isset($pair[1]) ? ucfirst($pair[1]) : '';
-		return "\$control->getWidget(\"$pair[0]\")->render$pair[1]({$this->formatArray($var)})";
+		return $var;
 	}
 
 
@@ -605,7 +500,7 @@ class CurlyBracketsFilter extends Object
 	 */
 	private function macroLink($var, $modifiers)
 	{
-		return $this->formatModifiers('$control->link(' . $this->formatLink($var) .')', $modifiers);
+		return $this->macroModifiers('$control->link(' . $this->formatVars($var) .')', $modifiers);
 	}
 
 
@@ -615,7 +510,7 @@ class CurlyBracketsFilter extends Object
 	 */
 	private function macroPlink($var, $modifiers)
 	{
-		return $this->formatModifiers('$presenter->link(' . $this->formatLink($var) .')', $modifiers);
+		return $this->macroModifiers('$presenter->link(' . $this->formatVars($var) .')', $modifiers);
 	}
 
 
@@ -625,17 +520,17 @@ class CurlyBracketsFilter extends Object
 	 */
 	private function macroIfCurrent($var, $modifiers)
 	{
-		return $var ? $this->formatModifiers('$presenter->link(' . $this->formatLink($var) .')', $modifiers) : '';
+		return $var ? $this->macroModifiers('$presenter->link(' . $this->formatVars($var) .')', $modifiers) : '';
 	}
 
 
 
 	/**
-	 * Formats {*link ...} parameters.
+	 * {ajaxlink ...}
 	 */
-	private function formatLink($var)
+	private function macroAjaxlink($var, $modifiers)
 	{
-		return $this->formatString($this->fetchToken($var)) . $this->formatArray($var, ', '); // destination [,] args
+		return $this->macroModifiers('$control->ajaxlink(' . $this->formatVars($var) .')', $modifiers);
 	}
 
 
@@ -645,8 +540,8 @@ class CurlyBracketsFilter extends Object
 	 */
 	private function macroAssign($var, $modifiers)
 	{
-		$param = ltrim($this->fetchToken($var), '$'); // [$]params value
-		return '$' . $param . ' = ' . $this->formatModifiers($var === '' ? 'NULL' : $var, $modifiers);
+		preg_match('#^\\$?(\S+)\s*(.*)$#', $var, $m); // [$]params value
+		return '$template->' . $m[1] . ' = $' . $m[1] . ' = ' . $this->macroModifiers($m[2] === '' ? 'NULL' : $m[2], $modifiers);
 	}
 
 
@@ -661,53 +556,39 @@ class CurlyBracketsFilter extends Object
 
 
 
-	/********************* compile-time helpers ****************d*g**/
-
-
-
 	/**
 	 * Applies modifiers.
-	 * @param  string
-	 * @param  string
-	 * @return string
 	 */
-	public static function formatModifiers($var, $modifiers)
+	public function macroModifiers($var, $modifiers)
 	{
 		if (!$modifiers) return $var;
 		preg_match_all(
-			'~
-				'.self::RE_STRING.'|  ## single or double quoted string
-				[^\'"|:,]+|           ## symbol
-				[|:,]                 ## separator
-			~xs',
+			'#[^\'"}\s|:]+|[|:]|\'[^\']*\'|"[^"]*"#s',
 			$modifiers . '|',
 			$tokens
 		);
-		$inside = FALSE;
-		$prev = '';
+		$state = FALSE;
 		foreach ($tokens[0] as $token) {
-			if ($token === '|' || $token === ':' || $token === ',') {
-				if ($prev === '') {
+			if ($token === ':' || $token === '|') {
+				if (!isset($prev)) {
+					continue;
 
-				} elseif (!$inside) {
-					if (!preg_match('#^'.self::RE_IDENTIFIER.'$#', $prev)) {
-						throw new InvalidStateException("Modifier name must be alphanumeric string, '$prev' given.");
-					}
+				} elseif ($state === FALSE) {
 					$var = "\$template->$prev($var";
-					$prev = '';
-					$inside = TRUE;
 
 				} else {
-					$var .= ', ' . self::formatString($prev);
-					$prev = '';
+					$var .= ', ' . $prev;
 				}
 
-				if ($token === '|' && $inside) {
+				if ($token === '|') {
 					$var .= ')';
-					$inside = FALSE;
+					$state = FALSE;
+
+				} else {
+					$state = TRUE;
 				}
 			} else {
-				$prev .= $token;
+				$prev = $token;
 			}
 		}
 		return $var;
@@ -716,113 +597,35 @@ class CurlyBracketsFilter extends Object
 
 
 	/**
-	 * Reads single token (optionally delimited by comma) from string.
-	 * @param  string
-	 * @return string
+	 * Formats {*link ...} parameters.
 	 */
-	public static function fetchToken(& $s)
+	private function formatVars($var)
 	{
-		if (preg_match('#^((?>'.self::RE_STRING.'|[^\'"\s,]+)+)\s*,?\s*(.*)$#', $s, $matches)) { // token [,] tail
-			$s = $matches[2];
-			return $matches[1];
+		if (preg_match('#^([^\s,]+),?\s*(.*)$#', $var, $m)) { // destination[,] args
+			$var = strspn($m[1], '\'"$') ? $m[1] : "'$m[1]'";
+			if ($m[2]) {
+				$var .= ', ' . (strpos($m[2], '=>') === FALSE ? $m[2] : "array($m[2])");
+			}
 		}
-		return NULL;
+		return $var;
 	}
 
 
 
 	/**
-	 * Formats parameters to PHP array.
-	 * @param  string
-	 * @param  string
-	 * @return string
+	 * Initializes state holder $_cb in template.
+	 * @param  ITemplate
+	 * @return stdClass
 	 */
-	public static function formatArray($s, $prefix = '')
+	public static function initState($template)
 	{
-		$s = preg_replace_callback(
-			'~
-				'.self::RE_STRING.'|           ## single or double quoted string
-				(?<=[,=(]|=>|^)\s*([a-z\d_]+)(?=\s*[,=)]|$)|   ## 1) symbol
-				(?<![=><!])(=)(?![=><!])       ## 2) equal sign
-			~xi',
-			array(__CLASS__, 'cbArgs'),
-			trim($s)
-		);
-		return $s === '' ? '' : $prefix . "array($s)";
-	}
-
-
-
-	/**
-	 * Callback for formatArgs().
-	 */
-	private static function cbArgs($matches)
-	{
-		//    [1] => symbol
-		//    [2] => equal sign
-
-		if (!empty($matches[2])) { // equal sign
-			return '=>';
-
-		} elseif (!empty($matches[1])) { // symbol
-			list(, $symbol) = $matches;
-			static $keywords = array('true'=>1, 'false'=>1, 'null'=>1, 'and'=>1, 'or'=>1, 'xor'=>1, 'clone'=>1, 'new'=>1);
-			return is_numeric($symbol) || isset($keywords[strtolower($symbol)]) ? $matches[0] : "'$symbol'";
-
-		} else {
-			return $matches[0];
+		if (!isset($template->_cb)) {
+			$template->_cb = (object) NULL;
 		}
-	}
-
-
-
-	/**
-	 * Formats parameter to PHP string.
-	 * @param  string
-	 * @return string
-	 */
-	public static function formatString($s)
-	{
-		return (is_numeric($s) || strspn($s, '\'"$')) ? $s : var_export($s, TRUE);
-	}
-
-
-
-	/********************* run-time helpers ****************d*g**/
-
-
-
-	/**
-	 * Calls block.
-	 * @param  array
-	 * @param  string
-	 * @param  array
-	 * @return void
-	 */
-	public static function callBlock(& $blocks, $name, $params)
-	{
-		if (empty($blocks[$name])) {
-			throw new InvalidStateException("Call to undefined block '$name'.");
+		if (!empty($template->_cb->caches)) { // cache support
+			end($template->_cb->caches)->addFile($template->getFile());
 		}
-		$block = reset($blocks[$name]);
-		$block($params);
-	}
-
-
-
-	/**
-	 * Calls parent block.
-	 * @param  array
-	 * @param  string
-	 * @param  array
-	 * @return void
-	 */
-	public static function callBlockParent(& $blocks, $name, $params)
-	{
-		if (empty($blocks[$name]) || ($block = next($blocks[$name])) === FALSE) {
-			throw new InvalidStateException("Call to undefined parent block '$name'.");
-		}
-		$block($params);
+		return $template->_cb;
 	}
 
 }

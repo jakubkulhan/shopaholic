@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Application
- * @version    $Id: SimpleRouter.php 352 2009-06-15 17:05:51Z david@grudl.com $
+ * @version    $Id: SimpleRouter.php 306 2009-05-08 10:56:50Z david@grudl.com $
  */
 
 
@@ -61,6 +61,11 @@ class SimpleRouter extends Object implements IRouter
 				self::PRESENTER_KEY => substr($defaults, 0, $a),
 				'action' => substr($defaults, $a + 1),
 			);
+
+		} elseif (isset($defaults['view'])) { // back compatiblity
+			trigger_error("Routing parameter 'view' is deprecated; use 'action' instead.", E_USER_WARNING);
+			$defaults['action'] = $defaults['view'];
+			unset($defaults['view']);
 		}
 
 		if (isset($defaults[self::MODULE_KEY])) {
@@ -98,7 +103,7 @@ class SimpleRouter extends Object implements IRouter
 			$params,
 			$httpRequest->getPost(),
 			$httpRequest->getFiles(),
-			array(PresenterRequest::SECURED => $httpRequest->isSecured())
+			array('secured' => $httpRequest->isSecured())
 		);
 	}
 
@@ -130,9 +135,8 @@ class SimpleRouter extends Object implements IRouter
 		}
 
 		$uri = $httpRequest->getUri();
-		$uri = ($this->flags & self::SECURED ? 'https://' : 'http://') . $uri->getAuthority() . $uri->getScriptPath();
-		$sep = ini_get('arg_separator.input');
-		$query = http_build_query($params, '', $sep ? $sep[0] : '&');
+		$uri = ($this->flags & self::SECURED ? 'https://' : 'http://') . $uri->authority . $uri->scriptPath;
+		$query = http_build_query($params, '', '&');
 		if ($query != '') { // intentionally ==
 			$uri .= '?' . $query;
 		}

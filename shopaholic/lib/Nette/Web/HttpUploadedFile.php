@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Web
- * @version    $Id: HttpUploadedFile.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: HttpUploadedFile.php 192 2009-01-17 00:18:44Z david@grudl.com $
  */
 
 
@@ -30,15 +30,6 @@ require_once dirname(__FILE__) . '/../Object.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Web
- *
- * @property-read string $name
- * @property-read string $contentType
- * @property-read int $size
- * @property-read string $temporaryFile
- * @property-read Image $image
- * @property-read int $error
- * @property-read array $imageSize
- * @property-read bool $ok
  */
 class HttpUploadedFile extends Object
 {
@@ -175,7 +166,7 @@ class HttpUploadedFile extends Object
 	 * Is there any error?
 	 * @return bool
 	 */
-	public function isOk()
+	public function isOK()
 	{
 		return $this->error === UPLOAD_ERR_OK;
 	}

@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Application
- * @version    $Id: Route.php 352 2009-06-15 17:05:51Z david@grudl.com $
+ * @version    $Id: Route.php 306 2009-05-08 10:56:50Z david@grudl.com $
  */
 
 
@@ -145,21 +145,22 @@ class Route extends Object implements IRouter
 		$uri = $httpRequest->getUri();
 
 		if ($this->type === self::HOST) {
-			$path = '//' . $uri->getHost() . $uri->getPath();
+			$path = '//' . $uri->host . $uri->path;
 
 		} elseif ($this->type === self::RELATIVE) {
-			$basePath = $uri->getBasePath();
-			if (strncmp($uri->getPath(), $basePath, strlen($basePath)) !== 0) {
+			$basePath = $uri->basePath;
+			if (strncmp($uri->path, $basePath, strlen($basePath)) !== 0) {
 				return NULL;
 			}
-			$path = (string) substr($uri->getPath(), strlen($basePath));
+			$path = (string) substr($uri->path, strlen($basePath));
 
 		} else {
-			$path = $uri->getPath();
+			$path = $uri->path;
 		}
 
 		if ($path !== '') {
 			$path = rtrim($path, '/') . '/';
+			$path = String::fixEncoding($path);
 		}
 
 		if (!preg_match($this->re, $path, $matches)) {
@@ -198,13 +199,11 @@ class Route extends Object implements IRouter
 		// 4) APPLY FILTERS & FIXITY
 		foreach ($this->metadata as $name => $meta) {
 			if (isset($params[$name])) {
-				if (!is_scalar($params[$name])) {
-
-				} elseif (isset($meta[self::FILTER_TABLE][$params[$name]])) { // applyies filterTable only to scalar parameters
+				if (isset($meta[self::FILTER_TABLE][$params[$name]])) { // applyies filterTable only to path parameters
 					$params[$name] = $meta[self::FILTER_TABLE][$params[$name]];
 
-				} elseif (isset($meta[self::FILTER_IN])) { // applyies filterIn only to scalar parameters
-					$params[$name] = call_user_func($meta[self::FILTER_IN], (string) $params[$name]);
+				} elseif (isset($meta[self::FILTER_IN])) { // applyies filterIn only to path parameters
+					$params[$name] = call_user_func($meta[self::FILTER_IN], $params[$name]);
 				}
 
 			} elseif (isset($meta['fixity'])) {
@@ -235,7 +234,7 @@ class Route extends Object implements IRouter
 			$params,
 			$httpRequest->getPost(),
 			$httpRequest->getFiles(),
-			array(PresenterRequest::SECURED => $httpRequest->isSecured())
+			array('secured' => $httpRequest->isSecured())
 		);
 	}
 
@@ -276,7 +275,7 @@ class Route extends Object implements IRouter
 			if (!isset($params[$name])) continue; // retains NULL values
 
 			if (isset($meta['fixity'])) {
-				if (is_scalar($params[$name]) && strcasecmp($params[$name], $meta['default']) === 0) {
+				if (strcasecmp($params[$name], $meta['default']) === 0) {  // intentionally ==
 					// remove default values; NULL values are retain
 					unset($params[$name]);
 					continue;
@@ -286,9 +285,7 @@ class Route extends Object implements IRouter
 				}
 			}
 
-			if (!is_scalar($params[$name])) {
-
-			} elseif (isset($meta['filterTable2'][$params[$name]])) {
+			if (isset($meta['filterTable2'][$params[$name]])) {
 				$params[$name] = $meta['filterTable2'][$params[$name]];
 
 			} elseif (isset($meta[self::FILTER_OUT])) {
@@ -344,16 +341,15 @@ class Route extends Object implements IRouter
 			$params = self::renameKeys($params, $this->xlat);
 		}
 
-		$sep = ini_get('arg_separator.input');
-		$query = http_build_query($params, '', $sep ? $sep[0] : '&');
+		$query = http_build_query($params, '', '&');
 		if ($query != '') $uri .= '?' . $query; // intentionally ==
 
 		// absolutize path
 		if ($this->type === self::RELATIVE) {
-			$uri = '//' . $httpRequest->getUri()->getAuthority() . $httpRequest->getUri()->getBasePath() . $uri;
+			$uri = '//' . $httpRequest->getUri()->authority . $httpRequest->getUri()->basePath . $uri;
 
 		} elseif ($this->type === self::PATH) {
-			$uri = '//' . $httpRequest->getUri()->getAuthority() . $uri;
+			$uri = '//' . $httpRequest->getUri()->authority . $uri;
 		}
 
 		$uri = ($this->flags & self::SECURED ? 'https:' : 'http:') . $uri;
@@ -386,6 +382,10 @@ class Route extends Object implements IRouter
 
 		$metadata = array();
 		foreach ($defaults as $name => $def) {
+			if ($name === 'view') {
+				trigger_error("Routing parameter 'view' is deprecated; use 'action' instead.", E_USER_WARNING);
+				$name = 'action';
+			}
 			$metadata[$name] = array(
 				'default' => $def,
 				'fixity' => self::CONSTANT
@@ -407,6 +407,10 @@ class Route extends Object implements IRouter
 
 			foreach ($matches as $match) {
 				list(, $param, $name, $pattern, $class) = $match;  // $pattern is unsed
+				if ($name === 'view') {
+					trigger_error("Routing parameter 'view' is deprecated; use 'action' instead.", E_USER_WARNING);
+					$name = 'action';
+				}
 
 				if ($class !== '') {
 					if (!isset(self::$styles[$class])) {
@@ -461,10 +465,11 @@ class Route extends Object implements IRouter
 			$class = $parts[$i]; $i--; // validation class
 			$pattern = $parts[$i]; $i--; // validation condition (as regexp)
 			$name = $parts[$i]; $i--; // parameter name
+			if ($name === 'view') $name = 'action'; // back compatibility
 			array_unshift($sequence, $name);
 
 			if ($name[0] === '?') { // "foo" parameter
-				$re = '(?:' . preg_quote(substr($name, 1), '#') . '|' . $pattern . ')' . $re;
+				$re = '(?:' . $pattern . ')' . $re;
 				$sequence[1] = substr($name, 1) . $sequence[1];
 				continue;
 			}
@@ -733,3 +738,9 @@ class Route extends Object implements IRouter
 	}
 
 }
+
+
+
+// back-compatibility
+Route::$styles['view'] = & Route::$styles['action'];
+Route::$styles['?view'] = & Route::$styles['?action'];

@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: Configurator.php 320 2009-05-25 15:07:17Z david@grudl.com $
+ * @version    $Id: Configurator.php 281 2009-04-18 02:02:35Z david@grudl.com $
  */
 
 
@@ -213,7 +213,7 @@ class Configurator extends Object
 			}
 		}
 
-		$config->freeze();
+		$config->setReadOnly();
 		return $config;
 	}
 

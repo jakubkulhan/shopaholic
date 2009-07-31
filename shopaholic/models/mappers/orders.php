@@ -166,6 +166,13 @@ final class orders extends mapper
                     'amount' => $products[$product->getId()]
                 ));
             }
+
+            $mail = new Mail;
+            $mail->setFrom(Environment::expand('%shopEmail%'));
+            $mail->addTo($data['email']);
+            $mail->setSubject(__('Your order at %s has been accepted', Environment::expand('%shopName%')));
+            $mail->setBody(str_replace('\n', "\n", __('Hello, your order has been accepted.')));
+            $mail->send();
         } catch (Exception $e) {
             dibi::rollback();
             return FALSE;

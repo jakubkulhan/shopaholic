@@ -15,13 +15,13 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Templates
- * @version    $Id: TemplateFilters.php 381 2009-06-26 13:16:05Z david@grudl.com $
+ * @version    $Id: TemplateFilters.php 297 2009-05-03 10:42:21Z david@grudl.com $
  */
 
 
 
 /**
- * Standard template compile-time filters shipped with Nette Framework.
+ * Standard template filters shipped with Nette Framework.
  *
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
@@ -36,6 +36,35 @@ final class TemplateFilters
 	final public function __construct()
 	{
 		throw new LogicException("Cannot instantiate static class " . get_class($this));
+	}
+
+
+
+	/********************* Filter curlyBrackets ****************d*g**/
+
+
+	/** @deprecated */
+	public static $curlyXlatMask;
+
+
+
+	/** @deprecated */
+	public static function curlyBrackets($s)
+	{
+		trigger_error(__METHOD__ . '() is deprecated; use $template->registerFilter(\'CurlyBracketsFilter::invoke\') instead', E_USER_WARNING);
+		return CurlyBracketsFilter::invoke($s);
+	}
+
+
+
+	/********************* Filter fragments ****************d*g**/
+
+
+
+	/** @deprecated */
+	public static function fragments($s)
+	{
+		trigger_error(__METHOD__ . '() is deprecated; use {block}...{/block} instead', E_USER_WARNING);
 	}
 
 
@@ -112,10 +141,10 @@ final class TemplateFilters
 	public static function netteLinks($s)
 	{
 		return preg_replace_callback(
-			'#(src|href|action)\s*=\s*(["\'])(nette:.*?)([\#"\'])#',
+			'#(src|href|action|on[a-z]+)\s*=\s*["\'](nette:.*?)([\#"\'])#',
 			array(__CLASS__, 'tnlCb'),
-			$s
-		);
+			$s)
+		;
 	}
 
 
@@ -126,12 +155,13 @@ final class TemplateFilters
 	 */
 	private static function tnlCb($m)
 	{
-		list(, $attr, $quote, $uri, $fragment) = $m;
+		list(, $attr, $uri, $fragment) = $m;
 
 		$parts = parse_url($uri);
 		if (isset($parts['scheme']) && $parts['scheme'] === 'nette') {
-			return $attr . '=' . $quote . '<?php echo $template->escape($control->'
-				. "link('"
+			return $attr . '="<?php echo $template->escape($control->'
+				. (strncmp($attr, 'on', 2) ? 'link' : 'ajaxLink')
+				. '(\''
 				. (isset($parts['path']) ? $parts['path'] : 'this!')
 				. (isset($parts['query']) ? '?' . $parts['query'] : '')
 				. '\'))?>'
@@ -198,3 +228,7 @@ final class TemplateFilters
 	}
 
 }
+
+
+// back compatiblity:
+TemplateFilters::$curlyXlatMask = & CurlyBracketsFilter::$macros;

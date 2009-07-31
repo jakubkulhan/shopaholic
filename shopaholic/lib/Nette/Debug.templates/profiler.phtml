@@ -16,7 +16,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: profiler.phtml 373 2009-06-26 07:13:00Z david@grudl.com $
+ * @version    $Id: profiler.phtml 259 2009-04-06 11:44:19Z david@grudl.com $
  *
  * @param      array     $colophons
  * @return     void
@@ -96,7 +96,7 @@
 
 <div id="netteProfilerContainer">
 <div id="netteProfiler">
-	<a id="netteProfilerIcon" href="#"><abbr>&#x25bc;</abbr></a
+	<a id="netteProfilerIcon" href="#"><span>&#x25bc;</span></a
 	><ul>
 	<?php foreach ($colophons as $callback): ?>
 	<?php foreach ((array) call_user_func($callback, 'profiler') as $line): ?><li><?php echo $line, "\n" ?></li><?php endforeach ?>
@@ -132,16 +132,14 @@ document.getElementById('netteProfiler').onmousedown = function(e) {
 };
 
 document.getElementById('netteProfilerIcon').onclick = function(e) {
-	var arrow = this.getElementsByTagName('abbr')[0];
+	var span = this.getElementsByTagName('span')[0];
 	var panel = this.nextSibling;
 	var collapsed = panel.currentStyle ? panel.currentStyle.display == 'none' : getComputedStyle(panel, null).display == 'none';
 
-	arrow.innerHTML = collapsed ? String.fromCharCode(0x25bc) : 'Profiler ' + String.fromCharCode(0x25ba);
+	span.innerHTML = collapsed ? String.fromCharCode(0x25bc) : 'Profiler ' + String.fromCharCode(0x25ba);
 	panel.style.display = collapsed ? 'block' : 'none';
-	arrow.parentNode.style.position = collapsed ? 'absolute' : 'static';
+	span.parentNode.style.position = collapsed ? 'absolute' : 'static';
 	return false;
 }
-
-document.body.appendChild(document.getElementById('netteProfilerContainer'));
 /* ]]> */
 </script>

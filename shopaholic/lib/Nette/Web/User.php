@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Web
- * @version    $Id: User.php 368 2009-06-25 14:26:59Z david@grudl.com $
+ * @version    $Id: User.php 306 2009-05-08 10:56:50Z david@grudl.com $
  */
 
 
@@ -32,13 +32,6 @@ require_once dirname(__FILE__) . '/../Web/IUser.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Web
- *
- * @property-read IIdentity $identity
- * @property   IAuthenticator $authenticationHandler
- * @property   IAuthorizator $authorizationHandler
- * @property-read int $signOutReason
- * @property-read array $roles
- * @property-read bool $authenticated
  */
 class User extends Object implements IUser
 {
@@ -54,10 +47,10 @@ class User extends Object implements IUser
 	/** @var string  default role for authenticated user without own identity */
 	public $authenticatedRole = 'authenticated';
 
-	/** @var array of function(User $sender); Occurs when the user is successfully authenticated */
+	/** @var array of event handlers; Occurs when the user is successfully authenticated; function(User $sender) */
 	public $onAuthenticated;
 
-	/** @var array of function(User $sender); Occurs when the user is logged off */
+	/** @var array of event handlers; Occurs when the user is logged off; function(User $sender) */
 	public $onSignedOut;
 
 	/** @var IAuthenticator */
@@ -230,8 +223,6 @@ class User extends Object implements IUser
 
 		$session->expireIdentity = (bool) $clearIdentity;
 		$session->expireBrowser = (bool) $whenBrowserIsClosed;
-		$session->browserCheck = TRUE;
-		$session->setExpiration(0, 'browserCheck');
 	}
 
 
@@ -265,7 +256,11 @@ class User extends Object implements IUser
 
 		$this->session = $session = $sessionHandler->getNamespace('Nette.Web.User/' . $this->namespace);
 
-		if (!($session->identity instanceof IIdentity) || !is_bool($session->authenticated)) {
+		if (!($session->identity instanceof IIdentity)) {
+			$session->remove();
+		}
+
+		if (!is_bool($session->authenticated)) {
 			$session->remove();
 		}
 
@@ -290,11 +285,6 @@ class User extends Object implements IUser
 			$session->expireTime = time() + $session->expireDelta; // sliding expiration
 		}
 
-		if (!$session->authenticated) {
-			unset($session->expireTime, $session->expireDelta, $session->expireIdentity,
-				$session->expireBrowser, $session->browserCheck, $session->authTime);
-		}
-
 		return $this->session;
 	}
 
@@ -315,11 +305,15 @@ class User extends Object implements IUser
 
 		if ($state) {
 			$session->reason = NULL;
+			$session->expireBrowser = TRUE;
 			$session->authTime = time(); // informative value
+			$session->browserCheck = TRUE;
+			$session->setExpiration(0, 'browserCheck');
 
 		} else {
 			$session->reason = self::MANUAL;
-			$session->authTime = NULL;
+			unset($session->browserCheck, $session->expireTime, $session->expireDelta,
+			$session->expireIdentity, $session->expireBrowser, $session->authTime);
 		}
 	}
 

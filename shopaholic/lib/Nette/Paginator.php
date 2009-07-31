@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: Paginator.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: Paginator.php 276 2009-04-16 10:02:42Z jakub.vrana $
  */
 
 
@@ -26,19 +26,6 @@
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette
- *
- * @property   int $page
- * @property-read int $firstPage
- * @property-read int $lastPage
- * @property   int $base
- * @property-read int $pageCount
- * @property   int $itemsPerPage
- * @property   int $itemCount
- * @property-read int $offset
- * @property-read int $countdownOffset
- * @property-read int $length
- * @property-read bool $first
- * @property-read bool $last
  */
 class Paginator extends Object
 {
@@ -243,6 +230,29 @@ class Paginator extends Object
 	public function getLength()
 	{
 		return min($this->itemsPerPage, $this->itemCount - $this->getPageIndex() * $this->itemsPerPage);
+	}
+
+
+
+	/**
+	 * Generates list of pages used for visual control. (experimental)
+	 * @return array
+	 * @deprecated
+	 */
+	public function getSteps($steps = 5, $surround = 3)
+	{
+		trigger_error('Paginator::getSteps() is deprecated; use template helper instead.', E_USER_WARNING);
+		$lastPage = $this->getPageCount() - 1;
+		$page = $this->getPageIndex();
+		if ($lastPage < 1) return array($page + $this->base);
+
+		$surround = max(0, $surround);
+		$arr = range(max(0, $page - $surround) + $this->base, min($lastPage, $page + $surround) + $this->base);
+
+		$steps = max(1, $steps - 1);
+		for ($i = 0; $i <= $steps; $i++) $arr[] = round($lastPage / $steps * $i) + $this->base;
+		sort($arr);
+		return array_values(array_unique($arr));
 	}
 
 }

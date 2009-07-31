@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Config
- * @version    $Id: Config.php 321 2009-05-25 15:54:01Z david@grudl.com $
+ * @version    $Id: Config.php 234 2009-03-26 21:19:54Z david@grudl.com $
  */
 
 
@@ -103,7 +103,7 @@ class Config extends Hashtable
 			}
 
 			if ($flags & self::READONLY) {
-				$this->freeze();
+				$this->setReadOnly();
 			}
 		}
 	}
@@ -139,7 +139,9 @@ class Config extends Hashtable
 	 */
 	public function expand()
 	{
-		$this->updating();
+		if ($this->readOnly) {
+			throw new NotSupportedException('Configuration is read-only.');
+		}
 
 		$data = $this->getArrayCopy();
 		foreach ($data as $key => $val) {
@@ -162,11 +164,14 @@ class Config extends Hashtable
 	 */
 	public function import($arr)
 	{
-		$this->updating();
+		if ($this->readOnly) {
+			throw new NotSupportedException('Configuration is read-only.');
+		}
 
 		foreach ($arr as $key => $val) {
 			if (is_array($val)) {
 				$arr[$key] = $obj = clone $this;
+				$obj->readOnly = & $this->readOnly;
 				$obj->import($val);
 			}
 		}
@@ -188,40 +193,6 @@ class Config extends Hashtable
 			}
 		}
 		return $res;
-	}
-
-
-
-	/**
-	 * Makes the object unmodifiable.
-	 * @return void
-	 */
-	public function freeze()
-	{
-		parent::freeze();
-		foreach ($this->getArrayCopy() as $val) {
-			if ($val instanceof self) {
-				$val->freeze();
-			}
-		}
-	}
-
-
-
-	/**
-	 * Creates a modifiable clone of the object.
-	 * @return void
-	 */
-	public function __clone()
-	{
-		parent::__clone();
-		$data = $this->getArrayCopy();
-		foreach ($data as $key => $val) {
-			if ($val instanceof self) {
-				$data[$key] = clone $val;
-			}
-		}
-		$this->setArray($data);
 	}
 
 

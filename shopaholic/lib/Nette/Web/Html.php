@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Web
- * @version    $Id: Html.php 356 2009-06-19 21:14:46Z david@grudl.com $
+ * @version    $Id: Html.php 276 2009-04-16 10:02:42Z jakub.vrana $
  */
 
 
@@ -71,9 +71,8 @@ class Html extends Object implements ArrayAccess, Countable, IteratorAggregate
 	public static function el($name = NULL, $attrs = NULL)
 	{
 		$el = new self ;
-		$parts = explode(' ', $name, 2);
-		$el->setName($parts[0]);
-
+		$parts = explode(' ', $name);
+		$el->setName(array_shift($parts));
 		if (is_array($attrs)) {
 			$el->attrs = $attrs;
 
@@ -81,13 +80,10 @@ class Html extends Object implements ArrayAccess, Countable, IteratorAggregate
 			$el->setText($attrs);
 		}
 
-		if (isset($parts[1])) {
-			preg_match_all('#([a-z0-9:-]+)(?:=(["\'])?(.*?)(?(2)\\2|\s))?#i', $parts[1] . ' ', $parts, PREG_SET_ORDER);
-			foreach ($parts as $m) {
-				$el->attrs[$m[1]] = isset($m[3]) ? $m[3] : TRUE;
-			}
+		foreach ($parts as $pair) {
+			$pair = explode('=', $pair, 2);
+			$el->attrs[$pair[0]] = isset($pair[1]) ? trim($pair[1], '"') : TRUE;
 		}
-
 		return $el;
 	}
 
@@ -180,18 +176,6 @@ class Html extends Object implements ArrayAccess, Countable, IteratorAggregate
 	 */
 	final public function __call($m, $args)
 	{
-		$p = substr($m, 0, 3);
-		if ($p === 'get' || $p === 'set' || $p === 'add') {
-			$m = substr($m, 3);
-			$m[0] = $m[0] | "\x20";
-			if ($p === 'get') {
-				return isset($this->attrs[$m]) ? $this->attrs[$m] : NULL;
-
-			} elseif ($p === 'add') {
-				$args[] = TRUE;
-			}
-		}
-
 		if (count($args) === 1) { // set
 			$this->attrs[$m] = $args[0];
 
@@ -259,9 +243,12 @@ class Html extends Object implements ArrayAccess, Countable, IteratorAggregate
 	 * @throws InvalidArgumentException
 	 * @return Html  provides a fluent interface
 	 */
-	final public function setText($text)
+	final public function setText($text, $isHtml = FALSE)
 	{
-		if (!is_array($text)) {
+		if ($isHtml) {
+			trigger_error('Html::setText(..., TRUE) is deprecated; use Html::setHtml(...) instead.', E_USER_WARNING);
+
+		} elseif (!is_array($text)) {
 			$text = str_replace(array('&', '<', '>'), array('&amp;', '&lt;', '&gt;'), (string) $text);
 		}
 		return $this->setHtml($text);

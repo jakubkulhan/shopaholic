@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Config
- * @version    $Id: ConfigAdapterIni.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: ConfigAdapterIni.php 237 2009-03-27 13:19:11Z david@grudl.com $
  */
 
 
@@ -35,13 +35,13 @@ final class ConfigAdapterIni implements IConfigAdapter
 {
 
 	/** @var string  key nesting separator (key1> key2> key3) */
-	public static $keySeparator = '.';
+	static public $keySeparator = '.';
 
 	/** @var string  section inheriting separator (section < parent) */
-	public static $sectionSeparator = ' < ';
+	static public $sectionSeparator = ' < ';
 
 	/** @var string  raw section marker */
-	public static $rawSection = '!';
+	static public $rawSection = '!';
 
 
 

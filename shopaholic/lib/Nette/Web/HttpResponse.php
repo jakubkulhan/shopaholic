@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Web
- * @version    $Id: HttpResponse.php 332 2009-05-29 17:41:52Z david@grudl.com $
+ * @version    $Id: HttpResponse.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -32,10 +32,6 @@ require_once dirname(__FILE__) . '/../Web/IHttpResponse.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Web
- *
- * @property   int $code
- * @property-read array $headers
- * @property-read mixed $sent
  */
 final class HttpResponse extends Object implements IHttpResponse
 {
@@ -160,40 +156,28 @@ final class HttpResponse extends Object implements IHttpResponse
 	 */
 	public function redirect($url, $code = self::S302_FOUND)
 	{
-		if (isset($_SERVER['SERVER_SOFTWARE']) && preg_match('#^Microsoft-IIS/[1-5]#', $_SERVER['SERVER_SOFTWARE'])) {
-			foreach (headers_list() as $header) {
-				if (strncasecmp($header, 'Set-Cookie:', 11) === 0) {
-					$this->setHeader('Refresh', "0;url=$url");
-					return;
-				}
-			}
-		}
-
 		$this->setCode($code);
 		$this->setHeader('Location', $url);
-		echo "<h1>Redirect</h1>\n\n<p><a href=\"" . htmlSpecialChars($url) . "\">Please click here to continue</a>.</p>";
+		$url = htmlSpecialChars($url);
+		echo "<h1>Redirect</h1>\n\n<p><a href=\"$url\">Please click here to continue</a>.</p>";
 	}
 
 
 
 	/**
 	 * Sets the number of seconds before a page cached on a browser expires.
-	 * @param  mixed  timestamp or number of seconds
+	 * @param  int  timestamp or number of seconds
 	 * @return void
 	 * @throws InvalidStateException  if HTTP headers have been sent
 	 */
-	public function expire($seconds)
+	public function expire($time)
 	{
-		if (is_string($seconds) && !is_numeric($seconds)) {
-			$seconds = strtotime($seconds);
-		}
-
-		if ($seconds > 0) {
-			if ($seconds <= Tools::YEAR) {
-				$seconds += time();
+		if ($time > 0) {
+			if ($time <= Tools::YEAR) {
+				$time += time();
 			}
-			$this->setHeader('Cache-Control', 'max-age=' . ($seconds - time()). ',must-revalidate');
-			$this->setHeader('Expires', self::date($seconds));
+			$this->setHeader('Cache-Control', 'max-age=' . ($time - time()). ',must-revalidate');
+			$this->setHeader('Expires', self::date($time));
 
 		} else { // no cache
 			$this->setHeader('Expires', 'Mon, 23 Jan 1978 10:00:00 GMT');
@@ -293,7 +277,7 @@ final class HttpResponse extends Object implements IHttpResponse
 	 * Sends a cookie.
 	 * @param  string name of the cookie
 	 * @param  string value
-	 * @param  mixed  expiration as unix timestamp or number of seconds; Value 0 means "until the browser is closed"
+	 * @param  int expiration as unix timestamp or number of seconds; Value 0 means "until the browser is closed"
 	 * @param  string
 	 * @param  string
 	 * @param  bool
@@ -306,17 +290,10 @@ final class HttpResponse extends Object implements IHttpResponse
 			throw new InvalidStateException("Cannot set cookie after HTTP headers have been sent" . ($file ? " (output started at $file:$line)." : "."));
 		}
 
-		if (is_string($expire) && !is_numeric($expire)) {
-			$expire = strtotime($expire);
-
-		} elseif ($expire > 0 && $expire <= Tools::YEAR) {
-			$expire += time();
-		}
-
 		setcookie(
 			$name,
 			$value,
-			$expire,
+			$expire > 0 && $expire <= Tools::YEAR ? $expire + time() : $expire,
 			$path === NULL ? $this->cookiePath : (string) $path,
 			$domain === NULL ? $this->cookieDomain : (string) $domain, //  . '; httponly'
 			$secure === NULL ? $this->cookieSecure : (bool) $secure,

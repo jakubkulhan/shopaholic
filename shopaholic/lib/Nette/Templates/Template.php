@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Templates
- * @version    $Id: Template.php 386 2009-06-27 01:00:30Z david@grudl.com $
+ * @version    $Id: Template.php 298 2009-05-03 16:13:22Z david@grudl.com $
  */
 
 
@@ -38,19 +38,16 @@ class Template extends Object implements IFileTemplate
 	/** @var bool */
 	public $warnOnUndefined = TRUE;
 
-	/** @var array of function(Template $sender); Occurs before a template is compiled - implement to customize the filters */
-	public $onPrepareFilters = array();
-
 	/** @var string */
 	private $file;
 
 	/** @var array */
 	private $params = array();
 
-	/** @var array compile-time filters */
+	/** @var array */
 	private $filters = array();
 
-	/** @var array run-time helpers */
+	/** @var array */
 	private $helpers = array();
 
 	/** @var array */
@@ -93,7 +90,7 @@ class Template extends Object implements IFileTemplate
 	 * @param  array   parameters (optional)
 	 * @return Template
 	 */
-	public function subTemplate($file, array $params = array())
+	public function subTemplate($file, array $params = NULL)
 	{
 		if ($file instanceof self) {
 			$tpl = $file;
@@ -103,46 +100,38 @@ class Template extends Object implements IFileTemplate
 
 		} else {
 			$tpl = clone $this;
-			if (substr($file, 0, 1) !== '/' && substr($file, 1, 1) !== ':') {
+			if ($file[0] !== '/' && $file[1] !== ':') {
 				$file = dirname($this->file) . '/' . $file;
 			}
 			$tpl->setFile($file);
 		}
 
-		$tpl->params = $params;
+		if ($params === NULL) {
+			$tpl->params = & $this->params;
+
+		} else {
+			$tpl->params = & $params;
+			$tpl->params += $this->params;
+		}
+
 		return $tpl;
 	}
 
 
 
 	/**
-	 * Registers callback as template compile-time filter.
+	 * Registers callback as template filter.
 	 * @param  callback
 	 * @return void
 	 */
 	public function registerFilter($callback)
 	{
 		fixCallback($callback);
-		if (!is_callable($callback)) {
-			$able = is_callable($callback, TRUE, $textual);
-			throw new InvalidArgumentException("Filter '$textual' is not " . ($able ? 'callable.' : 'valid PHP callback.'));
-		}
 		if (in_array($callback, $this->filters, TRUE)) {
 			is_callable($callback, TRUE, $textual);
 			throw new InvalidStateException("Filter '$textual' was registered twice.");
 		}
 		$this->filters[] = $callback;
-	}
-
-
-
-	/**
-	 * Returns all registered compile-time filters.
-	 * @return array
-	 */
-	final public function getFilters()
-	{
-		return $this->filters;
 	}
 
 
@@ -166,24 +155,24 @@ class Template extends Object implements IFileTemplate
 
 		$this->params['template'] = $this;
 
+		if (!count($this->filters)) {
+			LimitedScope::load($this->file, $this->params);
+			return;
+		}
+
 		$cache = new Cache($this->getCacheStorage(), 'Nette.Template');
-		$key = md5($this->file) . '.' . basename($this->file);
+		$key = md5($this->file) . count($this->filters) . '.' . basename($this->file);
 		$cached = $content = $cache[$key];
 
 		if ($content === NULL) {
-			if (!$this->filters) {
-				$this->onPrepareFilters($this);
-			}
-
-			if (!$this->filters) {
-				LimitedScope::load($this->file, $this->params);
-				return;
-			}
-
-			// compiling
 			$content = file_get_contents($this->file);
 
 			foreach ($this->filters as $filter) {
+				if (!is_callable($filter)) {
+					$able = is_callable($filter, TRUE, $textual);
+					throw new InvalidStateException("Filter '$textual' is not " . ($able ? 'callable.' : 'valid PHP callback.'));
+				}
+
 				// remove PHP code
 				$res = '';
 				$blocks = array();
@@ -209,12 +198,7 @@ class Template extends Object implements IFileTemplate
 					$content = call_user_func($filter, $res);
 				} catch (Exception $e) {
 					is_callable($filter, TRUE, $textual);
-					$file = $this->file;
-					try {
-						$file = str_replace(Environment::getVariable('templatesDir'), "\xE2\x80\xA6", $file);
-					} catch (Exception $foo) {
-					}
-					throw new InvalidStateException("Filter $textual: " . $e->getMessage() . " (in file $file)", 0, $e);
+					throw new InvalidStateException("Filter $textual: " . $e->getMessage() . " (in file $this->file)", 0, $e);
 				}
 
 				$content = strtr($content, $blocks); // put PHP code back
@@ -287,7 +271,7 @@ class Template extends Object implements IFileTemplate
 
 
 	/**
-	 * Registers callback as template run-time helper.
+	 * Registers callback as template helper.
 	 * @param  string
 	 * @param  callback
 	 * @return void
@@ -305,7 +289,7 @@ class Template extends Object implements IFileTemplate
 
 
 	/**
-	 * Registers callback as template run-time helpers loader.
+	 * Registers callback as template helpers loader.
 	 * @param  callback
 	 * @return void
 	 */
@@ -322,37 +306,26 @@ class Template extends Object implements IFileTemplate
 
 
 	/**
-	 * Returns all registered run-time helpers.
-	 * @return array
-	 */
-	final public function getHelpers()
-	{
-		return $this->helpers;
-	}
-
-
-
-	/**
-	 * Call a template run-time helper. Do not call directly.
+	 * Call a template helper. Do not call directly.
 	 * @param  string  helper name
 	 * @param  array   arguments
 	 * @return mixed
 	 */
 	public function __call($name, $args)
 	{
-		$lname = strtolower($name);
-		if (!isset($this->helpers[$lname])) {
+		$name = strtolower($name);
+		if (!isset($this->helpers[$name])) {
 			foreach ($this->helperLoaders as $loader) {
-				$helper = call_user_func($loader, $lname);
+				$helper = call_user_func($loader, $name);
 				if ($helper) {
-					$this->registerHelper($lname, $helper);
+					$this->registerHelper($name, $helper);
 					return call_user_func_array($helper, $args);
 				}
 			}
-			return parent::__call($name, $args);
+			throw new InvalidStateException("The helper '$name' was not registered.");
 		}
 
-		return call_user_func_array($this->helpers[$lname], $args);
+		return call_user_func_array($this->helpers[$name], $args);
 	}
 
 
@@ -391,11 +364,16 @@ class Template extends Object implements IFileTemplate
 
 
 	/**
-	 * @deprecated
+	 * Adds new template as parameter.
+	 * @param  string  name
+	 * @param  string|Template  file name or Template object
+	 * @return Template
 	 */
 	public function addTemplate($name, $file)
 	{
-		throw new DeprecatedException(__METHOD__ . '() is deprecated.');
+		$tpl = $this->subTemplate($file);
+		$this->add($name, $tpl);
+		return $tpl;
 	}
 
 
@@ -432,7 +410,7 @@ class Template extends Object implements IFileTemplate
 	public function &__get($name)
 	{
 		if ($this->warnOnUndefined && !array_key_exists($name, $this->params)) {
-			trigger_error("The variable '$name' does not exist in template '$this->file'", E_USER_NOTICE);
+			trigger_error("The variable '$name' does not exist in template '$this->file'", E_USER_WARNING);
 		}
 
 		return $this->params[$name];

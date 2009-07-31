@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: TextInput.php 315 2009-05-24 21:20:42Z david@grudl.com $
+ * @version    $Id: TextInput.php 226 2009-03-16 16:17:06Z david@grudl.com $
  */
 
 
@@ -40,7 +40,7 @@ class TextInput extends TextBase
 	 * @param  int  width of the control
 	 * @param  int  maximum number of characters the user may enter
 	 */
-	public function __construct($label = NULL, $cols = NULL, $maxLength = NULL)
+	public function __construct($label, $cols = NULL, $maxLength = NULL)
 	{
 		parent::__construct($label);
 		$this->control->type = 'text';

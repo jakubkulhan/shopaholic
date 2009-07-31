@@ -5,19 +5,3 @@
 {/if}
 <hr style="clear: both;">
 {include '@products.phtml', 'products' => $products}
-<hr>
-<div id="pagination">
-{if !$paginator->isFirst()}
-    <a href="{link default, $path, $paginator->getPage() - 1}">«</a>
-{/if}
-{for $i = 1; $i <= $paginator->getPageCount(); ++$i}
-    {if $i === $paginator->getPage()}
-        <strong>{$i}</strong>
-    {else}
-        <a href="{link default, $path, $i}">{$i}</a>
-    {/if}
-{/for}
-{if !$paginator->isLast()}
-    <a href="{link default, $path, $paginator->getPage() + 1}">»</a>
-{/if}
-</div>

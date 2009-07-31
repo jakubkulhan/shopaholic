@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Security
- * @version    $Id: Identity.php 356 2009-06-19 21:14:46Z david@grudl.com $
+ * @version    $Id: Identity.php 201 2009-01-28 05:56:46Z david@grudl.com $
  */
 
 
@@ -32,10 +32,6 @@ require_once dirname(__FILE__) . '/../Object.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Security
- *
- * @property   string $name
- * @property   mixed $id
- * @property   array $roles
  */
 class Identity extends Object implements IIdentity
 {
@@ -105,17 +101,6 @@ class Identity extends Object implements IIdentity
 	public function getRoles()
 	{
 		return $this->roles;
-	}
-
-
-
-	/**
-	 * Returns an user data.
-	 * @return array
-	 */
-	public function getData()
-	{
-		return $this->data;
 	}
 
 

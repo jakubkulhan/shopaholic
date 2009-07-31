@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Collections
- * @version    $Id: Collection.php 385 2009-06-26 23:25:27Z david@grudl.com $
+ * @version    $Id: Collection.php 238 2009-03-27 13:21:11Z david@grudl.com $
  */
 
 
@@ -30,19 +30,17 @@ require_once dirname(__FILE__) . '/../Collections/ICollection.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Collections
- *
- * @property-read bool $frozen
  */
 abstract class Collection extends ArrayObject implements ICollection
 {
 	/** @var string  type (class, interface, PHP type) */
-	private $itemType;
+	protected $itemType;
 
 	/** @var string  function to verify type */
-	private $checkFunc;
+	protected $checkFunc;
 
 	/** @var bool */
-	private $frozen = FALSE;
+	protected $readOnly = FALSE;
 
 
 
@@ -63,6 +61,17 @@ abstract class Collection extends ArrayObject implements ICollection
 		if ($arr !== NULL) {
 			$this->import($arr);
 		}
+	}
+
+
+
+	/**
+	 * Prevent any more modifications.
+	 * @return void
+	 */
+	public function setReadOnly()
+	{
+		$this->readOnly = TRUE;
 	}
 
 
@@ -89,7 +98,7 @@ abstract class Collection extends ArrayObject implements ICollection
 	 */
 	public function remove($item)
 	{
-		$this->updating();
+		$this->beforeRemove();
 		$index = $this->search($item);
 		if ($index === FALSE) {
 			return FALSE;
@@ -121,7 +130,7 @@ abstract class Collection extends ArrayObject implements ICollection
 	 */
 	public function clear()
 	{
-		$this->updating();
+		$this->beforeRemove();
 		parent::exchangeArray(array());
 	}
 
@@ -160,32 +169,12 @@ abstract class Collection extends ArrayObject implements ICollection
 
 
 	/**
-	 * Returns the item type.
-	 * @return string
-	 */
-	public function getItemType()
-	{
-		return $this->itemType;
-	}
-
-
-
-	/**
-	 * @deprecated
-	 */
-	public function setReadOnly()
-	{
-		throw new DeprecatedException(__METHOD__ . '() is deprecated; use freeze() instead.');
-	}
-
-
-
-	/**
-	 * @deprecated
+	 * Returns a value indicating whether collection is read-only.
+	 * @return bool
 	 */
 	public function isReadOnly()
 	{
-		throw new DeprecatedException(__METHOD__ . '() is deprecated; use isFrozen() instead.');
+		return $this->readOnly;
 	}
 
 
@@ -202,7 +191,9 @@ abstract class Collection extends ArrayObject implements ICollection
 	 */
 	protected function beforeAdd($item)
 	{
-		$this->updating();
+		if ($this->readOnly) {
+			throw new NotSupportedException('Collection is read-only.');
+		}
 
 		if ($this->itemType !== NULL) {
 			if ($this->checkFunc === NULL) {
@@ -215,6 +206,20 @@ abstract class Collection extends ArrayObject implements ICollection
 					throw new InvalidArgumentException("Item must be $this->itemType type.");
 				}
 			}
+		}
+	}
+
+
+
+	/**
+	 * Responds when an item is about to be removed from the collection.
+	 * @return void
+	 * @throws NotSupportedException
+	 */
+	protected function beforeRemove()
+	{
+		if ($this->readOnly) {
+			throw new NotSupportedException('Collection is read-only.');
 		}
 	}
 
@@ -343,68 +348,6 @@ abstract class Collection extends ArrayObject implements ICollection
 	public function __unset($name)
 	{
 		throw new MemberAccessException("Cannot unset the property $this->class::\$$name.");
-	}
-
-
-
-	/********************* Nette\FreezableObject behaviour ****************d*g**/
-
-
-
-	/**
-	 * Makes the object unmodifiable.
-	 * @return void
-	 */
-	public function freeze()
-	{
-		$this->frozen = TRUE;
-	}
-
-
-
-	/**
-	 * Is the object unmodifiable?
-	 * @return bool
-	 */
-	final public function isFrozen()
-	{
-		return $this->frozen;
-	}
-
-
-
-	/**
-	 * Creates a modifiable clone of the object.
-	 * @return void
-	 */
-	public function __clone()
-	{
-		$this->frozen = FALSE;
-	}
-
-
-
-	/**
-	 * Creates a modifiable clone of the object.
-	 * @return void
-	 */
-	public function __wakeup()
-	{
-		// ArrayObject serialization is wrong in PHP 5.2.x
-		$this->frozen = FALSE;
-	}
-
-
-
-	/**
-	 * @return void
-	 */
-	protected function updating()
-	{
-		if ($this->frozen) {
-			$class = get_class($this);
-			throw new InvalidStateException("Cannot modify a frozen object '$class'.");
-		}
 	}
 
 }

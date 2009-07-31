@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: Form.php 368 2009-06-25 14:26:59Z david@grudl.com $
+ * @version    $Id: Form.php 284 2009-04-21 17:41:39Z david@grudl.com $
  */
 
 
@@ -30,7 +30,6 @@ require_once dirname(__FILE__) . '/../Forms/FormContainer.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Forms
- *
  * @example    forms/basic-example.php  Form definition using fluent interfaces
  * @example    forms/manual-rendering.php  Manual form rendering and separated form and rules definition
  * @example    forms/localization.php  Localization (with Zend_Translate)
@@ -39,19 +38,6 @@ require_once dirname(__FILE__) . '/../Forms/FormContainer.php';
  * @example    forms/naming-containers.php  How to use naming containers
  * @example    forms/CSRF-protection.php  How to use Cross-Site Request Forgery (CSRF) form protection
  * @example    forms/custom-encoding.php  How to change charset
- *
- * @property   string $action
- * @property   string $method
- * @property-read array $groups
- * @property   string $encoding
- * @property   ITranslator $translator
- * @property   array $values
- * @property-read array $errors
- * @property-read Html $elementPrototype
- * @property   IFormRenderer $renderer
- * @property-read boold $submitted
- * @property-read boold $populated
- * @property-read boold $valid
  */
 class Form extends FormContainer
 {
@@ -84,21 +70,16 @@ class Form extends FormContainer
 	const SCRIPT = 'Nette\Forms\InstantClientScript::javascript';
 	/**#@-*/
 
-	/**#@+ method */
-	const GET = 'get';
-	const POST = 'post';
-	/**#@-*/
-
 	/** tracker ID */
 	const TRACKER_ID = '_form_';
 
 	/** protection token ID */
 	const PROTECTOR_ID = '_token_';
 
-	/** @var array of function(Form $sender); Occurs when the form is submitted and successfully validated */
+	/** @var array of event handlers; Occurs when the form is submitted and successfully validated; function(Form $sender) */
 	public $onSubmit;
 
-	/** @var array of function(Form $sender); Occurs when the form is submitted and not validated */
+	/** @var array of event handlers; Occurs when the form is submitted and not validated; function(Form $sender) */
 	public $onInvalidSubmit;
 
 	/** @var mixed */
@@ -252,24 +233,24 @@ class Form extends FormContainer
 
 	/**
 	 * Adds fieldset group to the form.
-	 * @param  string  caption
+	 * @param  string  label
 	 * @param  bool    set this group as current
 	 * @return FormGroup
 	 */
-	public function addGroup($caption = NULL, $setAsCurrent = TRUE)
+	public function addGroup($label = NULL, $setAsCurrent = TRUE)
 	{
 		$group = new FormGroup;
-		$group->setOption('label', $caption);
+		$group->setOption('label', $label);
 		$group->setOption('visual', TRUE);
 
 		if ($setAsCurrent) {
 			$this->setCurrentGroup($group);
 		}
 
-		if (isset($this->groups[$caption])) {
+		if (isset($this->groups[$label])) {
 			return $this->groups[] = $group;
 		} else {
-			return $this->groups[$caption] = $group;
+			return $this->groups[$label] = $group;
 		}
 	}
 

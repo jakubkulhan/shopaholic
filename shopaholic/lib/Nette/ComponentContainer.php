@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: ComponentContainer.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: ComponentContainer.php 234 2009-03-26 21:19:54Z david@grudl.com $
  */
 
 
@@ -32,8 +32,6 @@ require_once dirname(__FILE__) . '/IComponentContainer.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette
- *
- * @property-read ArrayIterator $components
  */
 class ComponentContainer extends Component implements IComponentContainer
 {

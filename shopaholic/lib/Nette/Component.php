@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: Component.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: Component.php 204 2009-02-02 18:27:51Z david@grudl.com $
  */
 
 
@@ -35,9 +35,6 @@ require_once dirname(__FILE__) . '/Object.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette
- *
- * @property-read string $name
- * @property IComponentContainer $parent
  */
 abstract class Component extends Object implements IComponent
 {

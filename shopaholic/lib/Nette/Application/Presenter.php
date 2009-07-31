@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Application
- * @version    $Id: Presenter.php 388 2009-06-27 01:15:30Z david@grudl.com $
+ * @version    $Id: Presenter.php 285 2009-04-27 18:52:23Z david@grudl.com $
  */
 
 
@@ -32,15 +32,6 @@ require_once dirname(__FILE__) . '/../Application/IPresenter.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Application
- *
- * @property-read PresenterRequest $request
- * @property-read int $phase
- * @property-read array $signal
- * @property-read string $action
- * @property   string $view
- * @property   string $layout
- * @property-read mixed $payload
- * @property-read Application $application
  */
 abstract class Presenter extends Control implements IPresenter
 {
@@ -70,7 +61,7 @@ abstract class Presenter extends Control implements IPresenter
 	/** @var int */
 	public static $invalidLinkMode;
 
-	/** @var array of function(Presenter $sender, \Exception $exception = NULL); Occurs when the presenter is shutting down */
+	/** @var array of event handlers; Occurs when the presenter is shutting down; function(Presenter $sender, Exception $exception = NULL) */
 	public $onShutdown;
 
 	/** @var bool (experimental) */
@@ -106,8 +97,8 @@ abstract class Presenter extends Control implements IPresenter
 	/** @var string */
 	private $layout = 'layout';
 
-	/** @var stdClass */
-	private $payload;
+	/** @var IAjaxDriver */
+	private $ajaxDriver;
 
 	/** @var string */
 	private $signalReceiver;
@@ -132,18 +123,18 @@ abstract class Presenter extends Control implements IPresenter
 	public function __construct(PresenterRequest $request)
 	{
 		$this->request = $request;
-		$this->payload = (object) NULL;
 		parent::__construct(NULL, $request->getPresenterName());
 	}
 
 
 
 	/**
+	 * @param  bool
 	 * @return PresenterRequest
 	 */
-	final public function getRequest()
+	final public function getRequest($clone = TRUE)
 	{
-		return $this->request;
+		return $clone ? clone $this->request : $this->request;
 	}
 
 
@@ -183,10 +174,16 @@ abstract class Presenter extends Control implements IPresenter
 		try {
 			// PHASE 1: STARTUP
 			$this->phase = self::PHASE_STARTUP;
+			if ($this->isAjax()) {
+				$this->getAjaxDriver()->open($this->getHttpResponse());
+			}
 			$this->initGlobalParams();
 			$this->startup();
 			// calls $this->action{action}();
 			$this->tryCall($this->formatActionMethod($this->getAction()), $this->params);
+			if ($this->tryCall('present'. $this->getAction(), $this->params)) { // deprecated
+				trigger_error('Method name present' . $this->getAction() . '() is deprecated; use ' . $this->formatActionMethod($this->getAction()) . '() instead.', E_USER_WARNING);
+			}
 
 			if ($this->autoCanonicalize) {
 				$this->canonicalize();
@@ -216,7 +213,7 @@ abstract class Presenter extends Control implements IPresenter
 			// save component tree persistent state
 			$this->saveGlobalState();
 			if ($this->isAjax()) {
-				$this->payload->state = $this->getGlobalState();
+				$this->getPayload()->state = $this->getGlobalState();
 			}
 
 			// finish template rendering
@@ -232,11 +229,11 @@ abstract class Presenter extends Control implements IPresenter
 			$this->phase = self::PHASE_SHUTDOWN;
 
 			if ($this->isAjax()) {
-				$this->sendPayload();
+				$this->ajaxDriver->close();
 			}
 
 			if ($this->hasFlashSession()) {
-				$this->getFlashSession()->setExpiration($e instanceof RedirectingException ? '+ 30 seconds': '+ 3 seconds');
+				$this->getFlashSession()->setExpiration($e instanceof RedirectingException ? 30 : 3);
 			}
 
 			$this->onShutdown($this, $e);
@@ -329,7 +326,7 @@ abstract class Presenter extends Control implements IPresenter
 		}
 
 		// auto invalidate
-		if ($this->oldLayoutMode && $component instanceof IRenderable) {
+		if ($component instanceof IRenderable) {
 			$component->invalidateControl();
 		}
 
@@ -459,6 +456,50 @@ abstract class Presenter extends Control implements IPresenter
 
 
 	/**
+	 * @deprecated
+	 */
+	public function changeView($view)
+	{
+		trigger_error('Presenter::changeView() is deprecated; use Presenter::setView(...) instead.', E_USER_WARNING);
+		$this->view = (string) $view;
+	}
+
+
+
+	/**
+	 * @deprecated
+	 */
+	final public function getScene()
+	{
+		trigger_error('Presenter::getScene() is deprecated; use Presenter::getView() instead.', E_USER_WARNING);
+		return $this->view;
+	}
+
+
+
+	/**
+	 * @deprecated
+	 */
+	public function changeScene($view)
+	{
+		trigger_error('Presenter::changeScene() is deprecated; use Presenter::setView(...) instead.', E_USER_WARNING);
+		$this->view = (string) $view;
+	}
+
+
+
+	/**
+	 * @deprecated
+	 */
+	public function changeLayout($layout)
+	{
+		trigger_error('Presenter::changeLayout() is deprecated; use Presenter::setLayout(...) instead.', E_USER_WARNING);
+		$this->layout = (string) $layout;
+	}
+
+
+
+	/**
 	 * @return void
 	 * @throws BadRequestException if no template found
 	 */
@@ -489,7 +530,7 @@ abstract class Presenter extends Control implements IPresenter
 			}
 
 			if (!$template->getFile()) {
-				$file = str_replace(Environment::getVariable('templatesDir'), "\xE2\x80\xA6", reset($files));
+				$file = reset($files);
 				throw new BadRequestException("Page not found. Missing template '$file'.");
 			}
 
@@ -498,10 +539,10 @@ abstract class Presenter extends Control implements IPresenter
 				foreach ($this->formatLayoutTemplateFiles($this->getName(), $this->layout) as $file) {
 					if (is_file($file)) {
 						if ($this->oldLayoutMode) {
-							$template->content = $template instanceof Template ? $template->subTemplate($template->getFile(), $template->getParams()) : $template->getFile();
+							$template->content = $template instanceof Template ? $template->subTemplate($template->getFile()) : $template->getFile();
 							$template->setFile($file);
 						} else {
-							$template->layout = $file;
+							$template->layout = $file; // experimental
 						}
 						break;
 					}
@@ -611,11 +652,11 @@ abstract class Presenter extends Control implements IPresenter
 
 
 	/**
-	 * @return stdClass
+	 * @return mixed
 	 */
-	final public function getPayload()
+	public function getPayload()
 	{
-		return $this->payload;
+		return $this->getAjaxDriver();
 	}
 
 
@@ -635,26 +676,29 @@ abstract class Presenter extends Control implements IPresenter
 
 
 	/**
-	 * Sends AJAX payload to the output.
-	 * @return void
+	 * @return IAjaxDriver|NULL
 	 */
-	protected function sendPayload()
+	public function getAjaxDriver()
 	{
-		if (!empty($this->payload)) {
-			$this->getHttpResponse()->expire(FALSE);
-			$this->getHttpResponse()->setContentType('application/json');
-			echo json_encode($this->payload);
+		if ($this->ajaxDriver === NULL) {
+			$value = $this->createAjaxDriver();
+			if (!($value instanceof IAjaxDriver)) {
+				$class = get_class($value);
+				throw new UnexpectedValueException("Object returned by $this->class::getAjaxDriver() must be instance of Nette\\Application\\IAjaxDriver, '$class' given.");
+			}
+			$this->ajaxDriver = $value;
 		}
+		return $this->ajaxDriver;
 	}
 
 
 
 	/**
-	 * @deprecated
+	 * @return IAjaxDriver
 	 */
-	public function getAjaxDriver()
+	protected function createAjaxDriver()
 	{
-		throw new DeprecatedException(__METHOD__ . '() is deprecated; use $presenter->payload instead.');
+		return new AjaxDriver;
 	}
 
 
@@ -696,7 +740,7 @@ abstract class Presenter extends Control implements IPresenter
 	public function redirectUri($uri, $code = IHttpResponse::S303_POST_GET)
 	{
 		if ($this->isAjax()) {
-			$this->payload->redirect = $uri;
+			$this->getPayload()->redirect = $uri;
 			$this->terminate();
 
 		} else {
@@ -773,7 +817,7 @@ abstract class Presenter extends Control implements IPresenter
 	 * Attempts to cache the sent entity by its last modification date
 	 * @param  int    last modified time as unix timestamp
 	 * @param  string strong entity tag validator
-	 * @param  mixed  optional expiration time
+	 * @param  int    optional expiration time
 	 * @return int    date of the client's cache version, if available
 	 * @throws TerminateException
 	 */
@@ -893,11 +937,6 @@ abstract class Presenter extends Control implements IPresenter
 		// 4) signal or empty
 		if (!($component instanceof Presenter) || substr($destination, -1) === '!') {
 			$signal = rtrim($destination, '!');
-			$a = strrpos($signal, ':');
-			if ($a !== FALSE) {
-				$component = $component->getComponent(strtr(substr($signal, 0, $a), ':', '-'));
-				$signal = (string) substr($signal, $a + 1);
-			}
 			if ($signal == NULL) {  // intentionally ==
 				throw new InvalidLinkException("Signal must be non-empty string.");
 			}
@@ -984,10 +1023,13 @@ abstract class Presenter extends Control implements IPresenter
 				 // in PHP 5.3
 				$method = call_user_func(array($presenterClass, 'formatActionMethod'), $action);
 				if (!PresenterHelpers::isMethodCallable($presenterClass, $method)) {
+					$method = 'present' . $action;
+					if (!PresenterHelpers::isMethodCallable($presenterClass, $method)) {// back compatibility
 					 // in PHP 5.3
 					$method = call_user_func(array($presenterClass, 'formatRenderMethod'), $action);
 					if (!PresenterHelpers::isMethodCallable($presenterClass, $method)) {
 						$method = NULL;
+					}
 					}
 				}
 
@@ -1054,7 +1096,7 @@ abstract class Presenter extends Control implements IPresenter
 
 		// make URL relative if possible
 		if ($mode === 'link' && $scheme === FALSE && !$this->absoluteUrls) {
-			$hostUri = $httpRequest->getUri()->getHostUri();
+			$hostUri = $httpRequest->getUri()->hostUri;
 			if (strncmp($uri, $hostUri, strlen($hostUri)) === 0) {
 				$uri = substr($uri, strlen($hostUri));
 			}

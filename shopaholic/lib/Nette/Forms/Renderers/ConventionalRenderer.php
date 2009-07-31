@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: ConventionalRenderer.php 350 2009-06-15 10:16:00Z david@grudl.com $
+ * @version    $Id: ConventionalRenderer.php 235 2009-03-26 22:08:52Z david@grudl.com $
  */
 
 
@@ -104,7 +104,6 @@ class ConventionalRenderer extends Object implements IFormRenderer
 
 			'errors' => FALSE,
 			'description' => 'small',
-			'requiredsuffix' => '',
 
 			'.required' => 'required',
 			'.text' => 'text',
@@ -118,7 +117,6 @@ class ConventionalRenderer extends Object implements IFormRenderer
 		'label' => array(
 			'container' => 'th',
 			'suffix' => NULL,
-			'requiredsuffix' => '',
 		),
 
 		'hidden' => array(
@@ -233,24 +231,7 @@ class ConventionalRenderer extends Object implements IFormRenderer
 			$control->setOption('rendered', FALSE);
 		}
 
-		if (strcasecmp($this->form->getMethod(), 'get') === 0) {
-			$el = clone $this->form->getElementPrototype();
-			$uri = explode('?', (string) $el->action, 2);
-			$el->action = $uri[0];
-			$s = '';
-			if (isset($uri[1])) {
-				foreach (explode('&', $uri[1]) as $param) {
-					$parts = explode('=', $param, 2);
-					$s .= Html::el('input', array('type' => 'hidden', 'name' => urldecode($parts[0]), 'value' => urldecode($parts[1])));
-				}
-				$s = "\n\t" . $this->getWrapper('hidden container')->setHtml($s);
-			}
-			return $el->startTag() . $s;
-
-
-		} else {
-			return $this->form->getElementPrototype()->startTag();
-		}
+		return $this->form->getElementPrototype()->startTag();
 	}
 
 
@@ -447,7 +428,7 @@ class ConventionalRenderer extends Object implements IFormRenderer
 			$s[] = (string) $control->getControl();
 		}
 		$pair = $this->getWrapper('pair container');
-		$pair->add($this->renderLabel($control));
+		$pair->add($this->getWrapper('label container')->setHtml('&nbsp;'));
 		$pair->add($this->getWrapper('control container')->setHtml(implode(" ", $s)));
 		return $pair->render(0);
 	}
@@ -464,16 +445,10 @@ class ConventionalRenderer extends Object implements IFormRenderer
 		$head = $this->getWrapper('label container');
 
 		if ($control instanceof Checkbox || $control instanceof Button) {
-			return $head->setHtml(($head->getName() === 'td' || $head->getName() === 'th') ? '&nbsp;' : '');
+			return $head->setHtml('&nbsp;');
 
 		} else {
-			$label = $control->getLabel();
-			$suffix = $this->getValue('label suffix') . ($control->getOption('required') ? $this->getValue('label requiredsuffix') : '');
-			if ($label instanceof Html) {
-				$label->setText($label->getText() . $suffix);
-				$suffix = '';
-			}
-			return $head->setHtml((string) $label . $suffix);
+			return $head->setHtml((string) $control->getLabel() . $this->getValue('label suffix'));
 		}
 	}
 
@@ -498,10 +473,6 @@ class ConventionalRenderer extends Object implements IFormRenderer
 
 		} else {
 			$description = '';
-		}
-
-		if ($control->getOption('required')) {
-			$description = $this->getValue('control requiredsuffix') . $description;
 		}
 
 		if ($this->getValue('control errors')) {

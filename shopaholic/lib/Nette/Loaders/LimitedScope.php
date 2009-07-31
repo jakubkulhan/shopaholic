@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Loaders
- * @version    $Id: LimitedScope.php 391 2009-06-27 09:05:20Z david@grudl.com $
+ * @version    $Id: LimitedScope.php 192 2009-01-17 00:18:44Z david@grudl.com $
  */
 
 
@@ -46,12 +46,10 @@ final class LimitedScope
 	 * @param  array   local variables
 	 * @return mixed   the return value of the evaluated code
 	 */
-	public static function evaluate(/*$code, array $vars = NULL*/)
+	public static function evaluate($_code, array $_vars = NULL)
 	{
-		if (func_num_args() > 1) {
-			$__vars = func_get_arg(1);
-			extract($__vars, EXTR_SKIP);
-			unset($__vars);
+		if ($_vars !== NULL) {
+			extract($_vars);
 		}
 		return eval('?>' . func_get_arg(0));
 	}
@@ -64,12 +62,10 @@ final class LimitedScope
 	 * @param  array   local variables
 	 * @return mixed   the return value of the included file
 	 */
-	public static function load(/*$file, array $vars = NULL*/)
+	public static function load($_file, array $_vars = NULL)
 	{
-		if (func_num_args() > 1) {
-			$__vars = func_get_arg(1);
-			extract($__vars, EXTR_SKIP);
-			unset($__vars);
+		if ($_vars !== NULL) {
+			extract($_vars);
 		}
 		return include func_get_arg(0);
 	}

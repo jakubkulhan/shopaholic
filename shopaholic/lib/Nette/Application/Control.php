@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Application
- * @version    $Id: Control.php 377 2009-06-26 11:23:24Z david@grudl.com $
+ * @version    $Id: Control.php 298 2009-05-03 16:13:22Z david@grudl.com $
  */
 
 
@@ -32,8 +32,6 @@ require_once dirname(__FILE__) . '/../Application/IRenderable.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Application
- *
- * @property-read ITemplate $template
  */
 abstract class Control extends PresenterComponent implements IPartiallyRenderable
 {
@@ -74,7 +72,6 @@ abstract class Control extends PresenterComponent implements IPartiallyRenderabl
 	{
 		$template = new Template;
 		$presenter = $this->getPresenter(FALSE);
-		$template->onPrepareFilters[] = array($this, 'templatePrepareFilters');
 
 		// default parameters
 		$template->component = $this; // DEPRECATED!
@@ -93,36 +90,13 @@ abstract class Control extends PresenterComponent implements IPartiallyRenderabl
 
 		// default helpers
 		$template->registerHelper('escape', 'Nette\Templates\TemplateHelpers::escapeHtml');
+		$template->registerHelper('cache', 'Nette\Templates\CachingHelper::create');
+		$template->registerHelper('snippet', 'Nette\Templates\SnippetHelper::create');
 		$template->registerHelper('stripTags', 'strip_tags');
 		$template->registerHelper('nl2br', 'nl2br');
 		$template->registerHelperLoader('Nette\Templates\TemplateHelpers::loader');
 
 		return $template;
-	}
-
-
-
-	/**
-	 * Descendant can override this method to customize template compile-time filters.
-	 * @param  Template
-	 * @return void
-	 */
-	public function templatePrepareFilters($template)
-	{
-		// default filters
-		$template->registerFilter(new CurlyBracketsFilter);
-	}
-
-
-
-	/**
-	 * Returns widget component specified by name.
-	 * @param  string
-	 * @return IComponent
-	 */
-	public function getWidget($name)
-	{
-		return $this->getComponent($name);
 	}
 
 

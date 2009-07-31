@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: FormGroup.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: FormGroup.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -30,9 +30,6 @@ require_once dirname(__FILE__) . '/../Object.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Forms
- *
- * @property-read array $controls
- * @property-read array $options
  */
 class FormGroup extends Object
 {
@@ -96,7 +93,7 @@ class FormGroup extends Object
 	 *
 	 * @param  string key
 	 * @param  mixed  value
-	 * @return FormGroup  provides a fluent interface
+	 * @return FormControl  provides a fluent interface
 	 */
 	public function setOption($key, $value)
 	{

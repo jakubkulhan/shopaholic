@@ -55,6 +55,15 @@ final class pages extends mapper
             ON [pictures].[thumbnail_id] = [thumbnails].[id]';
 
     /**
+     * Find all
+     * @return page[]
+     */
+    public function findAll()
+    {
+        return $this->poolResults(dibi::query($this->query));
+    }
+
+    /**
      * Find not referencing
      */
     public function findNotRef()

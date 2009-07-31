@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Collections
- * @version    $Id: ICollection.php 320 2009-05-25 15:07:17Z david@grudl.com $
+ * @version    $Id: ICollection.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -33,6 +33,7 @@ interface ICollection extends Countable, IteratorAggregate
 	function remove($item);
 	function clear();
 	function contains($item);
+	function isReadOnly();
 	//function IteratorAggregate::getIterator();
 	//function Countable::count();
 }

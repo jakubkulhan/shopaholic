@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: Button.php 315 2009-05-24 21:20:42Z david@grudl.com $
+ * @version    $Id: Button.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -37,7 +37,7 @@ class Button extends FormControl
 	/**
 	 * @param  string  caption
 	 */
-	public function __construct($caption = NULL)
+	public function __construct($caption)
 	{
 		parent::__construct($caption);
 		$this->control->type = 'button';

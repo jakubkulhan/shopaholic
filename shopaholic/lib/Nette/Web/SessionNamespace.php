@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Web
- * @version    $Id: SessionNamespace.php 318 2009-05-25 02:11:48Z david@grudl.com $
+ * @version    $Id: SessionNamespace.php 306 2009-05-08 10:56:50Z david@grudl.com $
  */
 
 
@@ -93,7 +93,7 @@ final class SessionNamespace extends Object implements IteratorAggregate, ArrayA
 	public function &__get($name)
 	{
 		if ($this->warnOnUndefined && !array_key_exists($name, $this->data)) {
-			trigger_error("The variable '$name' does not exist in session namespace", E_USER_NOTICE);
+			trigger_error("The variable '$name' does not exist in session namespace", E_USER_WARNING);
 		}
 
 		return $this->data[$name];
@@ -192,7 +192,6 @@ final class SessionNamespace extends Object implements IteratorAggregate, ArrayA
 			$seconds = strtotime($seconds);
 		}
 
-		$whenBrowserIsClosed = $seconds == 0;
 		if ($seconds <= 0) {
 			$seconds = 0;
 
@@ -202,16 +201,16 @@ final class SessionNamespace extends Object implements IteratorAggregate, ArrayA
 
 		if ($variables === NULL) {
 			// to entire namespace
-			$this->meta['EXP'][''] = array($seconds, $whenBrowserIsClosed);
+			$this->meta['EXP'][''] = $seconds;
 
 		} elseif (is_array($variables)) {
 			// to variables
 			foreach ($variables as $variable) {
-				$this->meta['EXP'][$variable] = array($seconds, $whenBrowserIsClosed);
+				$this->meta['EXP'][$variable] = $seconds;
 			}
 
 		} else {
-			$this->meta['EXP'][$variables] = array($seconds, $whenBrowserIsClosed);
+			$this->meta['EXP'][$variables] = $seconds;
 		}
 	}
 

@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Application
- * @version    $Id: Link.php 313 2009-05-18 17:38:47Z david@grudl.com $
+ * @version    $Id: Link.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -41,7 +41,7 @@ class Link extends Object
 	private $destination;
 
 	/** @var array */
-	private $params;
+	private $args;
 
 
 	/**
@@ -50,11 +50,11 @@ class Link extends Object
 	 * @param  string
 	 * @param  array
 	 */
-	public function __construct(PresenterComponent $component, $destination, array $params)
+	public function __construct(PresenterComponent $component, $destination, array $args)
 	{
 		$this->component = $component;
 		$this->destination = $destination;
-		$this->params = $params;
+		$this->args = $args;
 	}
 
 
@@ -78,7 +78,7 @@ class Link extends Object
 	 */
 	public function setParam($key, $value)
 	{
-		$this->params[$key] = $value;
+		$this->args[$key] = $value;
 	}
 
 
@@ -90,18 +90,7 @@ class Link extends Object
 	 */
 	public function getParam($key)
 	{
-		return isset($this->params[$key]) ? $this->params[$key] : NULL;
-	}
-
-
-
-	/**
-	 * Returns link parameters.
-	 * @return array
-	 */
-	public function getParams()
-	{
-		return $this->params;
+		return isset($this->args[$key]) ? $this->args[$key] : NULL;
 	}
 
 
@@ -113,7 +102,7 @@ class Link extends Object
 	public function __toString()
 	{
 		try {
-			return $this->component->link($this->destination, $this->params);
+			return $this->component->link($this->destination, $this->args);
 
 		} catch (Exception $e) {
 			trigger_error($e->getMessage(), E_USER_WARNING);

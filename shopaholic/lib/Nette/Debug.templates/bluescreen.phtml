@@ -16,10 +16,11 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: bluescreen.phtml 373 2009-06-26 07:13:00Z david@grudl.com $
+ * @version    $Id: bluescreen.phtml 292 2009-05-01 13:41:55Z david@grudl.com $
  *
  * @param      array     $exception
  * @param      array     $colophons
+ * @param      array     $keyFilter
  * @param      array     $internals
  * @return     void
  */
@@ -48,7 +49,6 @@ function _netteDebugPrintCode($file, $line, $count = 15)
 	$start = max(1, $line - floor($count / 2));
 
 	$source = explode("\n", @highlight_file($file, TRUE));
-	$spans = 1;
 	echo $source[0]; // <code><span color=highlight.html>
 	$source = explode('<br />', $source[1]);
 	array_unshift($source, NULL);
@@ -56,7 +56,7 @@ function _netteDebugPrintCode($file, $line, $count = 15)
 	$i = $start; // find last highlighted block
 	while (--$i >= 1) {
 		if (preg_match('#.*(</?span[^>]*>)#', $source[$i], $m)) {
-			if ($m[1] !== '</span>') { $spans++; echo $m[1]; }
+			if ($m[1] !== '</span>') echo $m[1];
 			break;
 		}
 	}
@@ -66,7 +66,6 @@ function _netteDebugPrintCode($file, $line, $count = 15)
 	$numWidth = strlen((string) key($source));
 
 	foreach ($source as $n => $s) {
-		$spans += substr_count($s, '<span') - substr_count($s, '</span');
 		$s = str_replace(array("\r", "\n"), array('', ''), $s);
 		if ($n === $line) {
 			printf(
@@ -79,24 +78,7 @@ function _netteDebugPrintCode($file, $line, $count = 15)
 			printf("<span class='line'>Line %{$numWidth}s:</span>    %s\n", $n, $s);
 		}
 	}
-	echo str_repeat('</span>', $spans), '</code>';
-}
-
-
-
-/**
- * Dumps variable.
- * @param  mixed
- * @return string
- */
-function _netteDump($var)
-{
-	return preg_replace_callback('#(<pre class="dump">|\s+)?(.*)\((\d+)\) <code>#', '_netteDumpCb', Debug::dump($var, TRUE));
-}
-
-function _netteDumpCb($m)
-{
-	return "$m[1]<a href='#' onclick='return !netteToggle(this)'>$m[2]($m[3]) " . (trim($m[1]) || $m[3] < 7 ? '<abbr>&#x25bc;</abbr> </a><code>' : '<abbr>&#x25ba;</abbr> </a><code class="collapsed">');
+	echo '</span></span></code>';
 }
 
 
@@ -113,7 +95,7 @@ function _netteOpenPanel($name, $collapsed)
 	$id++;
 	?>
 	<div class="panel">
-		<h2><a href="#" onclick="return !netteToggle(this, 'pnl<?php echo $id ?>')"><?php echo htmlSpecialChars($name) ?> <abbr><?php echo $collapsed ? '&#x25ba;' : '&#x25bc;' ?></abbr></a></h2>
+		<h2><a href="#" onclick="return !netteToggle(this, 'pnl<?php echo $id ?>')"><?php echo htmlSpecialChars($name) ?> <span><?php echo $collapsed ? '&#x25ba;' : '&#x25bc;' ?></span></a></h2>
 
 		<div id="pnl<?php echo $id ?>" class="<?php echo $collapsed ? 'collapsed ' : '' ?>inner">
 	<?php
@@ -146,18 +128,9 @@ static $errorTypes = array(
 	E_CORE_ERROR => 'Core Error',
 	E_COMPILE_ERROR => 'Compile Error',
 	E_PARSE => 'Parse Error',
-	E_WARNING => 'Warning',
-	E_CORE_WARNING => 'Core Warning',
-	E_COMPILE_WARNING => 'Compile Warning',
-	E_USER_WARNING => 'User Warning',
-	E_NOTICE => 'Notice',
-	E_USER_NOTICE => 'User Notice',
-	E_STRICT => 'Strict',
-	E_DEPRECATED => 'Deprecated',
-	E_USER_DEPRECATED => 'User Deprecated',
 );
 $title = ($exception instanceof FatalErrorException && isset($errorTypes[$exception->getSeverity()])) ? $errorTypes[$exception->getSeverity()] : get_class($exception);
-$rn = 0;
+
 
 if (headers_sent()) {
 	echo '</pre></xmp></table>';
@@ -202,13 +175,10 @@ if (headers_sent()) {
 			right: .5em;
 			top: .5em;
 			z-index: 23179;
+			color: black;
 			text-decoration: none;
 			background: red;
 			padding: 3px;
-		}
-
-		#netteBluescreenIcon abbr {
-			color: black !important;
 		}
 
 		#netteBluescreen h1 {
@@ -227,7 +197,7 @@ if (headers_sent()) {
 			color: #4197E3;
 		}
 
-		#netteBluescreen a abbr {
+		#netteBluescreen a span {
 			font-family: sans-serif;
 			color: #999;
 		}
@@ -247,7 +217,7 @@ if (headers_sent()) {
 		}
 
 		#netteBluescreen pre, #netteBluescreen table {
-			background: #fffbcc;
+			background: #ffffcc;
 			padding: .4em .7em;
 			border: 1px dotted silver;
 		}
@@ -260,10 +230,6 @@ if (headers_sent()) {
 
 		#netteBluescreen pre.dump span {
 			color: #c16549;
-		}
-
-		#netteBluescreen pre.dump a {
-			color: #333;
 		}
 
 		#netteBluescreen div.panel {
@@ -283,18 +249,8 @@ if (headers_sent()) {
 
 		#netteBluescreen td, #netteBluescreen th {
 			vertical-align: top;
-			text-align: left;
 			padding: 2px 3px;
 			border: 1px solid #eeeebb;
-		}
-
-		#netteBluescreen th {
-			width: 10%;
-			font-weight: bold;
-		}
-
-		#netteBluescreen .odd, #netteBluescreen .odd pre {
-			background-color: #faf5c3;
 		}
 
 		#netteBluescreen ul {
@@ -322,17 +278,16 @@ if (headers_sent()) {
 
 	<script type="text/javascript">
 	/* <![CDATA[ */
-		document.write('<style> .collapsed { display: none; } <\/style>');
+		document.write('<style> .collapsed { display: none; } </style>');
 
 		function netteToggle(link, panelId)
 		{
-			var arrow = link.getElementsByTagName('abbr')[0];
-			var panel = panelId ? document.getElementById(panelId) : link.nextSibling;
-			while (panel.nodeType !== 1) panel = panel.nextSibling;
+			var span = link.getElementsByTagName('span')[0];
+			var panel = document.getElementById(panelId);
 			var collapsed = panel.currentStyle ? panel.currentStyle.display == 'none' : getComputedStyle(panel, null).display == 'none';
 
-			arrow.innerHTML = String.fromCharCode(collapsed ? 0x25bc : 0x25ba);
-			panel.style.display = collapsed ? (panel.tagName.toLowerCase() === 'code' ? 'inline' : 'block') : 'none';
+			span.innerHTML = String.fromCharCode(collapsed ? 0x25bc : 0x25ba);
+			panel.style.display = collapsed ? 'block' : 'none';
 
 			return true;
 		}
@@ -343,10 +298,11 @@ if (headers_sent()) {
 
 
 <body>
-<div id="netteBluescreen">
-	<a id="netteBluescreenIcon" href="#" onclick="return !netteToggle(this)"><abbr>&#x25bc;</abbr></a
+	<div>
+		<a id="netteBluescreenIcon" href="#" onclick="return !netteToggle(this, 'netteBluescreen')"><span>&#x25bc;</span></a>
+	</div>
 
-	><div>
+	<div id="netteBluescreen">
 		<div id="netteBluescreenError" class="panel">
 			<h1><?php echo htmlspecialchars($title), ($exception->getCode() ? ' #' . $exception->getCode() : '') ?></h1>
 
@@ -388,12 +344,12 @@ if (headers_sent()) {
 						&lt;PHP inner-code&gt;
 					<?php endif ?>
 
-					<?php if (isset($row['file']) && is_file($row['file'])): ?><a href="#" onclick="return !netteToggle(this, 'src<?php echo "$level-$key" ?>')">source <abbr>&#x25ba;</abbr></a>&nbsp; <?php endif ?>
+					<?php if (isset($row['file']) && is_file($row['file'])): ?><a href="#" onclick="return !netteToggle(this, 'src<?php echo "$level-$key" ?>')">source <span>&#x25ba;</span></a> &nbsp; <?php endif ?>
 
 					<?php if (isset($row['class'])) echo $row['class'] . $row['type'] ?>
 					<?php echo $row['function'] ?>
 
-					(<?php if (!empty($row['args'])): ?><a href="#" onclick="return !netteToggle(this, 'args<?php echo "$level-$key" ?>')">arguments <abbr>&#x25ba;</abbr></a><?php endif ?>)
+					(<?php if (!empty($row['args'])): ?><a href="#" onclick="return !netteToggle(this, 'args<?php echo "$level-$key" ?>')">arguments <span>&#x25ba;</span></a><?php endif ?>)
 					</p>
 
 					<?php if (!empty($row['args'])): ?>
@@ -407,8 +363,12 @@ if (headers_sent()) {
 							$params = array();
 						}
 						foreach ($row['args'] as $k => $v) {
-							echo '<tr><th>', (isset($params[$k]) ? '$' . $params[$k]->name : "#$k"), '</th><td>';
-							echo _netteDump($v);
+							echo '<tr><td>', (isset($params[$k]) ? '$' . $params[$k]->name : "#$k"), '</td><td>';
+							if (isset($params[$k]) && isset($keyFilter[strtolower($params[$k]->name)])) {
+								echo '<i>*** hidden ***</i>';
+							} else {
+								echo Debug::dump($v, TRUE);
+							}
 							echo "</td></tr>\n";
 						}
 						?>
@@ -447,7 +407,8 @@ if (headers_sent()) {
 			<table>
 			<?php
 			foreach ($ex->context as $k => $v) {
-				echo '<tr><th>$', htmlspecialchars($k), '</th><td>', _netteDump($v), "</td></tr>\n";
+				echo '<tr><td>$', htmlspecialchars($k), '</td>';
+				echo '<td>', (isset($keyFilter[strtolower($k)]) ? '<i>*** hidden ***</i>' : Debug::dump($v, TRUE)), "</td></tr>\n";
 			}
 			?>
 			</table>
@@ -463,23 +424,23 @@ if (headers_sent()) {
 			<?php
 			$list = get_defined_constants(TRUE);
 			if (!empty($list['user'])):?>
-			<h3><a href="#" onclick="return !netteToggle(this, 'pnl-env-const')">Constants <abbr>&#x25bc;</abbr></a></h3>
+			<h3><a href="#" onclick="return !netteToggle(this, 'pnl-env-const')">Constants <span>&#x25bc;</span></a></h3>
 			<table id="pnl-env-const">
 			<?php
 			foreach ($list['user'] as $k => $v) {
-				echo '<tr'.($rn++%2?' class="odd"':'').'><th>', htmlspecialchars($k), '</th>';
-				echo '<td>', _netteDump($v), "</td></tr>\n";
+				echo '<tr><td>', htmlspecialchars($k), '</td>';
+				echo '<td>', (isset($keyFilter[strtolower($k)]) ? '<i>*** hidden ***</i>' : Debug::dump($v, TRUE)), "</td></tr>\n";
 			}
 			?>
 			</table>
 			<?php endif ?>
 
 
-			<h3><a href="#" onclick="return !netteToggle(this, 'pnl-env-files')">Included files <abbr>&#x25ba;</abbr></a>(<?php echo count(get_included_files()) ?>)</h3>
+			<h3><a href="#" onclick="return !netteToggle(this, 'pnl-env-files')">Included files <span>&#x25ba;</span></a> (<?php echo count(get_included_files()) ?>)</h3>
 			<table id="pnl-env-files" class="collapsed">
 			<?php
 			foreach (get_included_files() as $v) {
-				echo '<tr'.($rn++%2?' class="odd"':'').'><td>', htmlspecialchars($v), "</td></tr>\n";
+				echo '<tr><td>', htmlspecialchars($v), "</td></tr>\n";
 			}
 			?>
 			</table>
@@ -491,7 +452,7 @@ if (headers_sent()) {
 			<?php else: ?>
 			<table>
 			<?php
-			foreach ($_SERVER as $k => $v) echo '<tr'.($rn++%2?' class="odd"':'').'><th>', htmlspecialchars($k), '</th><td>', _netteDump($v), "</td></tr>\n";
+			foreach ($_SERVER as $k => $v) echo '<tr><td>', htmlspecialchars($k), '</td><td>', Debug::dump($v, TRUE), "</td></tr>\n";
 			?>
 			</table>
 			<?php endif ?>
@@ -504,7 +465,7 @@ if (headers_sent()) {
 			<h3>Headers</h3>
 			<table>
 			<?php
-			foreach (apache_request_headers() as $k => $v) echo '<tr'.($rn++%2?' class="odd"':'').'><th>', htmlspecialchars($k), '</th><td>', htmlspecialchars($v), "</td></tr>\n";
+			foreach (apache_request_headers() as $k => $v) echo '<tr><td>', htmlspecialchars($k), '</td><td>', htmlspecialchars($v), "</td></tr>\n";
 			?>
 			</table>
 			<?php endif ?>
@@ -517,7 +478,7 @@ if (headers_sent()) {
 			<?php else: ?>
 			<table>
 			<?php
-			foreach ($GLOBALS[$name] as $k => $v) echo '<tr'.($rn++%2?' class="odd"':'').'><th>', htmlspecialchars($k), '</th><td>', _netteDump($v), "</td></tr>\n";
+			foreach ($GLOBALS[$name] as $k => $v) echo '<tr><td>', htmlspecialchars($k), '</td><td>', Debug::dump($v, TRUE), "</td></tr>\n";
 			?>
 			</table>
 			<?php endif ?>
@@ -544,10 +505,5 @@ if (headers_sent()) {
 			<?php endforeach ?>
 		</ul>
 	</div>
-</div>
-
-<script type="text/javascript">
-	document.body.appendChild(document.getElementById('netteBluescreen'));
-</script>
 </body>
 </html>

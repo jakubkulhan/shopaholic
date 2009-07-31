@@ -15,12 +15,12 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Application
- * @version    $Id: PresenterRequest.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: PresenterRequest.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
 
-require_once dirname(__FILE__) . '/../FreezableObject.php';
+require_once dirname(__FILE__) . '/../Object.php';
 
 
 
@@ -30,22 +30,11 @@ require_once dirname(__FILE__) . '/../FreezableObject.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Application
- *
- * @property   string $presenterName
- * @property   array $params
- * @property   array $post
- * @property   array $files
  */
-final class PresenterRequest extends FreezableObject
+final class PresenterRequest extends Object
 {
 	/** method */
 	const FORWARD = 'FORWARD';
-
-	/** flag */
-	const SECURED = 'secured';
-
-	/** flag */
-	const RESTORED = 'restored';
 
 	/** @var string */
 	private $method;
@@ -87,38 +76,12 @@ final class PresenterRequest extends FreezableObject
 
 
 	/**
-	 * Sets the presenter name.
-	 * @param  string
-	 * @return void
-	 */
-	public function setPresenterName($name)
-	{
-		$this->updating();
-		$this->name = $name;
-	}
-
-
-
-	/**
 	 * Retrieve the presenter name.
 	 * @return string
 	 */
 	public function getPresenterName()
 	{
 		return $this->name;
-	}
-
-
-
-	/**
-	 * Sets variables provided to the presenter.
-	 * @param  array
-	 * @return void
-	 */
-	public function setParams(array $params)
-	{
-		$this->updating();
-		$this->params = $params;
 	}
 
 
@@ -135,19 +98,6 @@ final class PresenterRequest extends FreezableObject
 
 
 	/**
-	 * Sets variables provided to the presenter via POST.
-	 * @param  array
-	 * @return void
-	 */
-	public function setPost(array $params)
-	{
-		$this->updating();
-		$this->post = $params;
-	}
-
-
-
-	/**
 	 * Returns all variables provided to the presenter via POST.
 	 * @return array
 	 */
@@ -159,37 +109,12 @@ final class PresenterRequest extends FreezableObject
 
 
 	/**
-	 * Sets all uploaded files.
-	 * @param  array
-	 * @return void
-	 */
-	public function setFiles(array $files)
-	{
-		$this->updating();
-		$this->files = $files;
-	}
-
-
-
-	/**
 	 * Returns all uploaded files.
 	 * @return array
 	 */
 	public function getFiles()
 	{
 		return $this->files;
-	}
-
-
-
-	/**
-	 * Sets the method.
-	 * @param  string
-	 * @return void
-	 */
-	public function setMethod($method)
-	{
-		$this->method = $method;
 	}
 
 
@@ -218,20 +143,6 @@ final class PresenterRequest extends FreezableObject
 
 
 	/**
-	 * Sets the flag.
-	 * @param  string
-	 * @param  bool
-	 * @return void
-	 */
-	public function setFlag($flag, $value = TRUE)
-	{
-		$this->updating();
-		$this->flags[$flag] = (bool) $value;
-	}
-
-
-
-	/**
 	 * Checks the flag.
 	 * @param  string
 	 * @return bool
@@ -239,6 +150,22 @@ final class PresenterRequest extends FreezableObject
 	public function hasFlag($flag)
 	{
 		return !empty($this->flags[$flag]);
+	}
+
+
+
+	/**
+	 * @return array
+	 * @internal
+	 */
+	public function modify($var, $key, $value = NULL)
+	{
+		if (func_num_args() === 3) {
+			$this->{$var}[$key] = $value;
+
+		} else {
+			$this->$var = $key;
+		}
 	}
 
 }

@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: FileUpload.php 344 2009-06-14 23:22:02Z david@grudl.com $
+ * @version    $Id: FileUpload.php 254 2009-04-01 06:08:57Z david@grudl.com $
  */
 
 
@@ -37,7 +37,7 @@ class FileUpload extends FormControl
 	/**
 	 * @param  string  label
 	 */
-	public function __construct($label = NULL)
+	public function __construct($label)
 	{
 		$this->monitor('Nette\Forms\Form');
 		parent::__construct($label);
@@ -75,7 +75,8 @@ class FileUpload extends FormControl
 			$this->value = $value;
 
 		} else {
-			$this->value = new HttpUploadedFile(NULL);
+			// TODO: or create object?
+			$this->value = NULL;
 		}
 	}
 

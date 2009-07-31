@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Web
- * @version    $Id: IHttpResponse.php 314 2009-05-19 23:01:42Z david@grudl.com $
+ * @version    $Id: IHttpResponse.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -103,10 +103,10 @@ interface IHttpResponse
 
 	/**
 	 * Sets the number of seconds before a page cached on a browser expires.
-	 * @param  mixed  timestamp or number of seconds
+	 * @param  int  timestamp or number of seconds
 	 * @return void
 	 */
-	function expire($seconds);
+	function expire($time);
 
 	/**
 	 * Checks if headers have been sent.
@@ -124,7 +124,7 @@ interface IHttpResponse
 	 * Sends a cookie.
 	 * @param  string name of the cookie
 	 * @param  string value
-	 * @param  mixed expiration as unix timestamp or number of seconds; Value 0 means "until the browser is closed"
+	 * @param  int expiration as unix timestamp or number of seconds; Value 0 means "until the browser is closed"
 	 * @param  string
 	 * @param  string
 	 * @param  bool

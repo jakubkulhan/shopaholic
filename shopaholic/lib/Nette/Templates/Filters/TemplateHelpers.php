@@ -15,13 +15,13 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Templates
- * @version    $Id: TemplateHelpers.php 382 2009-06-26 16:09:12Z david@grudl.com $
+ * @version    $Id: TemplateHelpers.php 298 2009-05-03 16:13:22Z david@grudl.com $
  */
 
 
 
 /**
- * Standard template run-time helpers shipped with Nette Framework.
+ * Standard template helpers shipped with Nette Framework.
  *
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
@@ -69,7 +69,7 @@ final class TemplateHelpers
 	public static function escapeHtml($s)
 	{
 		if (is_object($s) && ($s instanceof Template || $s instanceof Html || $s instanceof Form)) {
-			return $s->__toString(TRUE);
+			return (string) $s;
 		}
 		return htmlSpecialChars($s, ENT_QUOTES);
 	}
@@ -122,7 +122,7 @@ final class TemplateHelpers
 	 */
 	public static function escapeJs($s)
 	{
-		return str_replace(']]>', ']]\x3E', json_encode($s));
+		return json_encode($s);
 	}
 
 
@@ -197,18 +197,17 @@ final class TemplateHelpers
 	/**
 	 * Converts to human readable file size.
 	 * @param  int
-	 * @param  int
 	 * @return string
 	 */
-	public static function bytes($bytes, $precision = 2)
+	public static function bytes($bytes)
 	{
-		$bytes = round($bytes);
+		$bytes = (int) $bytes;
 		$units = array('B', 'kB', 'MB', 'GB', 'TB', 'PB');
 		foreach ($units as $unit) {
 			if (abs($bytes) < 1024) break;
 			$bytes = $bytes / 1024;
 		}
-		return round($bytes, $precision) . ' ' . $unit;
+		return round($bytes, 2) . ' ' . $unit;
 	}
 
 }

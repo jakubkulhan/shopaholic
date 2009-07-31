@@ -70,6 +70,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
         if ($product) {
             mapper::products()->deleteOne($product);
         }
+
         $this->redirect('products');
         $this->terminate();
     }
@@ -83,6 +84,85 @@ final class Back_ContentPresenter extends Back_BasePresenter
     public function actionEditAvailability($id)
     {
         $this->template->id = intval($id);
+    }
+
+    public function actionFulltext()
+    {
+        // init
+        fulltext::init(FULLTEXT_DIR);
+
+        // get dirty
+        $this->template->num_docs = fulltext::index()->numDocs();
+        $this->template->dirty = fulltext::dirty();
+        $this->template->num_dirty = count($this->template->dirty);
+
+        // index
+        $index = fulltext::index();
+        $this->template->update_now = array_slice($this->template->dirty, 0, 50);
+        foreach (mapper::products()->findByIds($this->template->update_now) as $product) {
+            // delete old
+            foreach ($index->termDocs(
+                new Zend_Search_Lucene_Index_Term($product->getId(), 'id')) as $id) 
+            {
+                $index->delete($id);
+            }
+
+            // add
+            $doc = new Zend_Search_Lucene_Document;
+            $doc->addField(Zend_Search_Lucene_Field::Keyword('id', $product->getId()));
+            $doc->addField(Zend_Search_Lucene_Field::UnStored('name', $product->getName()));
+            $doc->addField(Zend_Search_Lucene_Field::UnStored('nice_name', $product->getNiceName()));
+            $doc->addField(Zend_Search_Lucene_Field::Unstored('code', $product->getCode()));
+
+            $doc->addField(Zend_Search_Lucene_Field::UnStored('meta_keywords', $product->getMetaKeywords()));
+            $doc->addField(Zend_Search_Lucene_Field::UnStored('meta_description', $product->getMetaDescription()));
+
+            $description = '';
+            if (strlen($product->getDescription()) < 1) {
+                if (strlen($product->getMetaDescription()) < 1) {
+                    $description = $product->getName();
+                } else {
+                    $description = $product->getMetaDescription();
+                }
+            } else {
+                $description = $product->getDescription();
+            }
+            if ($manufacturer = mapper::products()->findManufacturerOf($product->getId())) {
+                $doc->addField(Zend_Search_Lucene_Field::UnStored('manufacturer', $manufacturer->getName()));
+                $description .= ' ' . $manufacturer->getName();
+                $description .= ' ' . $manufacturer->getDescription();
+            }
+
+            if ($category = mapper::products()->findCategoryOf($product->getId())) {
+                $doc->addField(Zend_Search_Lucene_Field::UnStored('category', $category->getName()));
+                $description .= ' ' . $category->getName();
+                $description .= ' ' . $category->getDescription();
+            }
+
+            $description .= ' ' . $product->getName();
+            $doc->addField(Zend_Search_Lucene_Field::UnStored('description', $description));
+
+            $index->addDocument($doc);
+            fulltext::dirty($product->getId(), FALSE);
+        }
+
+        // refresh
+        $s = 5;
+        Environment::getHttpResponse()->setHeader('Refresh', $s . '; ' . 
+            (string) Environment::getHttpRequest()->getOriginalUri());
+
+        $this->template->next_update = $s;
+    }
+
+    public function actionOptimizeFulltext()
+    {
+        // init
+        fulltext::init(FULLTEXT_DIR);
+
+        // optimize
+        fulltext::index()->optimize();
+        $this->redirect('fulltext');
+        $this->terminate();
     }
 
     public function renderPriceChanges()
@@ -249,6 +329,11 @@ final class Back_ContentPresenter extends Back_BasePresenter
     {
         $this->template->title = __('Title page');
         $this->template->form = $this->getComponent('titlePageForm');
+    }
+
+    public function renderFulltext()
+    {
+        $this->template->title = __('Fulltext');
     }
 
     public function createComponent($name)

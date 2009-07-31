@@ -134,7 +134,7 @@ final class products extends mapper
      * @param category
      * @return array
      */
-    public function findByCategory(category $category, $limit = NULL, $offset = NULL)
+    public function findByCategory(category $category, $limit = NULL, $offset = NULL, $letter = NULL)
     {
         try {
             $cat = dibi::query('SELECT [lft], [rgt]',
@@ -145,9 +145,14 @@ final class products extends mapper
                 'LEFT JOIN [:prefix:categories] AS [categories]
                     ON [categories].[id] = [products].[category_id]',
                 'WHERE [categories].[lft] >= %i', $cat->lft,
-                    'AND [categories].[rgt] <= %i', $cat->rgt,
-                'ORDER BY [pages].[nice_name]'
+                'AND [categories].[rgt] <= %i', $cat->rgt
             );
+
+            if ($letter !== NULL) {
+                $query = array_merge($query, (array) 'AND', $this->whereLetter($letter));
+            }
+
+            $query[] = 'ORDER BY [pages].[nice_name]';
 
             if ($limit !== NULL) {
                 $query[] = 'LIMIT %i';
@@ -170,25 +175,36 @@ final class products extends mapper
      * @param manufacturer
      * @return array
      */
-    public function findByManufacturer(manufacturer $manufacturer, $limit = NULL, $offset = NULL)
+    public function findByManufacturer(manufacturer $manufacturer, $limit = NULL, $offset = NULL, $letter = NULL)
     {
-        $query = array($this->query,
-            'LEFT JOIN [:prefix:manufacturers] AS [manufacturers]
-                ON [manufacturers].[id] = [products].[manufacturer_id]',
-            'WHERE [manufacturers].[id] = %i', $manufacturer->getId(),
-            'ORDER BY [pages].[nice_name]');
+        try {
+            $query = array(
+                $this->query,
+                'WHERE [products].[manufacturer_id] = %i', $manufacturer->getId()
+            );
 
-        if ($limit !== NULL) {
-            $query[] = 'LIMIT %i';
-            $query[] = intval($limit);
-        }
+            if ($letter !== NULL) {
+                $query = array_merge($query, (array) 'AND', $this->whereLetter($letter));
+            }
 
-        if ($offset !== NULL) {
-            $query[] = 'OFFSET %i';
-            $query[] = intval($offset);
+            $query[] = 'ORDER BY [pages].[nice_name]';
+
+            if ($limit !== NULL) {
+                $query[] = 'LIMIT %i';
+                $query[] = intval($limit);
+            }
+
+            if ($offset !== NULL) {
+                $query[] = 'OFFSET %i';
+                $query[] = intval($offset);
+            }
+
+            $ret = $this->poolResults(dibi::query($query));
+            return $ret;
+        } catch (Exception $e) {
+            var_dump($e->getMessage());
+            return array();
         }
-        $ret = $this->poolResults(dibi::query($query));
-        return $ret;
     }
 
     /**
@@ -261,14 +277,29 @@ final class products extends mapper
      * Count by manufacturer
      * @return int
      */
-    public function countByManufacturer(manufacturer $manufacturer)
+    public function countByManufacturer(manufacturer $manufacturer, $letter = NULL)
     {
         try {
-            return dibi::query('SELECT COUNT(*) FROM [:prefix:products] AS [products]
-                LEFT JOIN [:prefix:manufacturers] AS [manufacturers]
-                    ON [products].[manufacturer_id] = [manufacturers].[id]',
-                'WHERE [manufacturers].[id] = %i', $manufacturer->getId())->fetchSingle();
+            $query = array('SELECT COUNT(*) FROM [:prefix:products] AS [products]');
+
+            if ($letter !== NULL) {
+                $query[] = 'LEFT JOIN [:prefix:pages] AS [pages] ON [pages].[ref_id] = [products].[id] AND [pages].[ref_type] = %s';
+                $query[] = pages::PRODUCT;
+            }
+
+            $query[] = 'LEFT JOIN [:prefix:manufacturers] AS [manufacturers] ON [products].[manufacturer_id] = [manufacturers].[id]';
+            $query[] = 'WHERE [manufacturers].[id] = %i';
+            $query[] = $manufacturer->getId();
+
+            if ($letter !== NULL) {
+                $query = array_merge($query, (array) 'AND', $this->whereLetter($letter));
+            }
+
+
+            return dibi::query($query)->fetchSingle();
+
         } catch (Exception $e) {
+            var_dump($e);
             return NULL;
         }
     }
@@ -277,17 +308,50 @@ final class products extends mapper
      * Count by category
      * @return int
      */
-    public function countByCategory(category $category)
+    public function countByCategory(category $category, $letter = NULL)
     {
         try {
-            return dibi::query('SELECT COUNT(*) FROM [:prefix:products] AS [products]
-                LEFT JOIN [:prefix:categories] AS [categories]
-                    ON [products].[category_id] = [categories].[id]',
-                'WHERE [categories].[id] = %i', $category->getId())->fetchSingle();
+            $query = array('SELECT COUNT(*) FROM [:prefix:products] AS [products]');
+
+            if ($letter !== NULL) {
+                $query[] = 'LEFT JOIN [:prefix:pages] AS [pages] ON [pages].[ref_id] = [products].[id] AND [pages].[ref_type] = %s';
+                $query[] = pages::PRODUCT;
+            }
+
+            $query[] = 'LEFT JOIN [:prefix:categories] AS [categories] ON [products].[category_id] = [categories].[id]';
+            $query[] = 'WHERE [categories].[id] = %i';
+            $query[] = $category->getId();
+
+            if ($letter !== NULL) {
+                $query = array_merge($query, (array) 'AND', $this->whereLetter($letter));
+            }
+
+            return dibi::query($query)->fetchSingle();
+
         } catch (Exception $e) {
             var_dump($e);
             return NULL;
         }
+    }
+
+    /**
+     * Build where condition for given letter
+     * @param string
+     * @return array
+     */
+    private function whereLetter($letter = NULL)
+    {
+        if ($letter === NULL) {
+            return array();
+        }
+
+        if ($letter === '#') {
+            return array('[pages].[nice_name] >= %s', '0', 
+                'AND [pages].[nice_name] <= %s', '9');
+        }
+
+        return array('[pages].[nice_name] >= %s', $letter,
+            'AND [pages].[nice_name] <= %s', chr(ord($letter) + 1));
     }
 
     /**
@@ -348,6 +412,13 @@ final class products extends mapper
             dibi::query('DELETE FROM [:prefix:pages]',
                 'WHERE [nice_name] = %s', $p->getNiceName(),
                 'LIMIT 1');
+
+            //<fulltext>
+            foreach (fulltext::index()->termDocs(new Zend_Search_Lucene_Index_Term(
+                $p->getId(), 'id')) as $id) fulltext::index()->delete($id);
+            fulltext::dirty($p->getId(), FALSE);
+            //</fulltext>
+
             return TRUE;
         } catch (Exception $e) {
             return FALSE;
@@ -417,6 +488,11 @@ final class products extends mapper
             dibi::query('INSERT INTO [:prefix:pages]', $values);
 
             dibi::commit();
+
+            //<fulltext>
+            fulltext::dirty($product_id, TRUE);
+            //</fulltext>
+
             return TRUE;
 
         } catch (Exception $e) {
@@ -482,6 +558,11 @@ final class products extends mapper
             }
 
             dibi::commit();
+
+            //<fulltext>
+            fulltext::dirty($product_id, TRUE);
+            //</fulltext>
+
             return TRUE;
 
         } catch (Exception $e) {

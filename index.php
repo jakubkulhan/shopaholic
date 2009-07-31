@@ -9,6 +9,8 @@ define('TITLE_PAGE_FILE', CONF_DIR . '/titlepage.php');
 define('DB_FILE', CONF_DIR . '/db.php');
 define('COMMON_FILE', CONF_DIR . '/common.php');
 define('TIMEZONE_FILE', CONF_DIR . '/timezone.php');
+define('LOCALE_FILE', CONF_DIR . '/locale.php');
 define('SESSION_ORDER_NS', 'order');
+define('FULLTEXT_DIR', BASE_DIR . '/fulltext');
 
 require_once APP_DIR . '/bootstrap.php';

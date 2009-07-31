@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: SmartCachingIterator.php 380 2009-06-26 11:42:11Z david@grudl.com $
+ * @version    $Id: SmartCachingIterator.php 230 2009-03-19 12:16:22Z david@grudl.com $
  */
 
 
@@ -26,12 +26,6 @@
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette
- *
- * @property-read bool $first
- * @property-read bool $last
- * @property-read bool $empty
- * @property-read bool $odd
- * @property-read bool $even
  */
 class SmartCachingIterator extends CachingIterator
 {
@@ -125,6 +119,18 @@ class SmartCachingIterator extends CachingIterator
 
 
 	/**
+	 * Returns the current index (counter - 1).
+	 * @return int
+	 * @deprecated
+	 */
+	public function getIndex()
+	{
+		return $this->counter > 0 ? $this->counter - 1 : FALSE;
+	}
+
+
+
+	/**
 	 * Forwards to the next element.
 	 * @return void
 	 */
@@ -146,28 +152,6 @@ class SmartCachingIterator extends CachingIterator
 	{
 		parent::rewind();
 		$this->counter = parent::valid() ? 1 : 0;
-	}
-
-
-
-	/**
-	 * Returns the next key.
-	 * @return mixed
-	 */
-	public function getNextKey()
-	{
-		return $this->getInnerIterator()->key();
-	}
-
-
-
-	/**
-	 * Returns the next element.
-	 * @return mixed
-	 */
-	public function getNextValue()
-	{
-		return $this->getInnerIterator()->current();
 	}
 
 

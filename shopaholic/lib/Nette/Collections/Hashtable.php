@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Collections
- * @version    $Id: Hashtable.php 320 2009-05-25 15:07:17Z david@grudl.com $
+ * @version    $Id: Hashtable.php 184 2009-01-07 17:45:11Z david@grudl.com $
  */
 
 
@@ -118,13 +118,11 @@ class Hashtable extends Collection implements IMap
 	 */
 	public function import($arr)
 	{
-		$this->updating();
-
 		if (!(is_array($arr) || $arr instanceof Traversable)) {
 			throw new InvalidArgumentException("Argument must be traversable.");
 		}
 
-		if ($this->getItemType() === NULL) { // optimalization
+		if (!$this->readOnly && $this->itemType === NULL) { // optimalization
 			$this->setArray((array) $arr);
 
 		} else {
@@ -244,12 +242,11 @@ class Hashtable extends Collection implements IMap
 	 */
 	public function offsetUnset($key)
 	{
-		$this->updating();
-
 		if (!is_scalar($key)) {
 			throw new InvalidArgumentException("Key must be either a string or an integer, " . gettype($key) ." given.");
 		}
 
+		$this->beforeRemove();
 		if (parent::offsetExists($key)) {
 			parent::offsetUnset($key);
 		}

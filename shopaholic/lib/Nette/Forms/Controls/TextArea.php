@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: TextArea.php 315 2009-05-24 21:20:42Z david@grudl.com $
+ * @version    $Id: TextArea.php 220 2009-02-25 18:45:34Z david@grudl.com $
  */
 
 
@@ -40,7 +40,7 @@ class TextArea extends TextBase
 	 * @param  int  width of the control
 	 * @param  int  height of the control in text lines
 	 */
-	public function __construct($label = NULL, $cols = NULL, $rows = NULL)
+	public function __construct($label, $cols = NULL, $rows = NULL)
 	{
 		parent::__construct($label);
 		$this->control->setName('textarea');

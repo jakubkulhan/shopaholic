@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: Image.php 355 2009-06-16 17:31:51Z david@grudl.com $
+ * @version    $Id: Image.php 267 2009-04-08 10:38:14Z david@grudl.com $
  */
 
 
@@ -37,10 +37,6 @@ require_once dirname(__FILE__) . '/Object.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette
- *
- * @property-read int $width
- * @property-read int $height
- * @property-read resource $imageResource
  */
 class Image extends Object
 {
@@ -97,7 +93,7 @@ class Image extends Object
 			throw new Exception("PHP extension GD is not loaded.");
 		}
 
-		$info = @getimagesize($file); // intentionally @
+		$info = getimagesize($file);
 		if (self::$useImageMagick && (empty($info) || $info[0] * $info[1] > 2e6)) {
 			return new ImageMagick($file, $format);
 		}
@@ -116,7 +112,7 @@ class Image extends Object
 			if (self::$useImageMagick) {
 				return new ImageMagick($file, $format);
 			}
-			throw new Exception("Unknown image type or file '$file' not found.");
+			throw new Exception("Unknown image type in file '$file'.");
 		}
 	}
 

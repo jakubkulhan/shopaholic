@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: FormControl.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: FormControl.php 220 2009-02-25 18:45:34Z david@grudl.com $
  */
 
 
@@ -32,23 +32,7 @@ require_once dirname(__FILE__) . '/../../Forms/IFormControl.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Forms
- *
- * @property-read Form $form
- * @property-read mixed $control
- * @property-read mixed $label
- * @property-read string $htmlName
- * @property   string $htmlId
- * @property-read array $options
- * @property   ITranslator $translator
- * @property   mixed $value
- * @property-read Html $controlPrototype
- * @property-read Html $labelPrototype
- * @property-read Rules $rules
- * @property-read array $errors
- * @property   bool $disabled
- * @property   bool $rendered
- * @property   bool $required
-*/
+ */
 abstract class FormControl extends Component implements IFormControl
 {
 	/** @var string */
@@ -90,14 +74,14 @@ abstract class FormControl extends Component implements IFormControl
 
 
 	/**
-	 * @param  string  caption
+	 * @param  string  label
 	 */
-	public function __construct($caption = NULL)
+	public function __construct($label)
 	{
 		parent::__construct();
 		$this->control = Html::el('input');
 		$this->label = Html::el('label');
-		$this->caption = $caption;
+		$this->caption = $label;
 		$this->rules = new Rules($this);
 	}
 
@@ -581,8 +565,8 @@ abstract class FormControl extends Component implements IFormControl
 	{
 		if (!in_array($message, $this->errors, TRUE)) {
 			$this->errors[] = $message;
+			$this->getForm()->addError($message);
 		}
-		$this->getForm()->addError($message);
 	}
 
 

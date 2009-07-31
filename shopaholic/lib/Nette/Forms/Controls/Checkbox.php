@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: Checkbox.php 315 2009-05-24 21:20:42Z david@grudl.com $
+ * @version    $Id: Checkbox.php 182 2008-12-31 00:28:33Z david@grudl.com $
  */
 
 
@@ -37,7 +37,7 @@ class Checkbox extends FormControl
 	/**
 	 * @param  string  label
 	 */
-	public function __construct($label = NULL)
+	public function __construct($label)
 	{
 		parent::__construct($label);
 		$this->control->type = 'checkbox';

@@ -47,6 +47,7 @@ table {
 /****** The 1Kb Grid *****/
 
 .grid-1 { width:60px; }
+.grid-1_5 { width: 90px; }
 .grid-2 { width:140px; }
 .grid-3 { width:220px; }
 .grid-4 { width:300px; }
@@ -80,7 +81,8 @@ table {
 body {
     padding: 32px;
     text-align: center;
-    background: url('img/pattern.png');
+    /*background: url('img/pattern.png');*/
+    background: #eee;
     font-family: sans-serif;
     font-size: small;
 }
@@ -122,6 +124,47 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
     font-size: 120%;
     font-style: italic;
     font-weight: normal;
+}
+#header form {
+    height: 90px;
+    line-height: 90px;
+    text-align: right;
+    padding-right: 15px;
+}
+#header form input.text {
+    padding: 9px;
+    border: none;
+    -moz-border-radius-topleft: 10px;
+    -moz-border-radius-bottomleft: 10px;
+    -webkit-border-top-left-radius: 10px;
+    -webkit-border-bottom-left-radius: 10px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+#header form input.submit {
+    padding: 0;
+    margin: 0;
+    position: relative;
+    top: 5px;
+    left: 0;
+    border: none;
+    background: white;
+    color: red;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+    -moz-border-radius-topright: 10px;
+    -moz-border-radius-bottomright: 10px;
+    -webkit-border-top-right-radius: 10px;
+    -webkit-border-bottom-right-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    font-size: 25px;
+    color: #91417D;
+}
+#header form input.submit:hover {
+    color: white;
+    background: #91417D;
 }
 h1 {
     font-size: 180%;
@@ -251,7 +294,7 @@ p {
 }
 #footer {
     text-align: center;
-    font-size: 70%;
+    font-size: 90%;
 }
 fieldset {
     padding: 10px;
@@ -282,10 +325,10 @@ table.address td {
 #addresses {
     margin-bottom: 20px;
 }
-a.next, input[type=submit], #pagination a {
+a.next, input[type=submit], #pagination a, #alphabet a {
     display: inline-block;
-    margin: 5px;
-    padding: 5px;
+    margin: 1px;
+    padding: 4px;
     text-decoration: none;
     background: #91417D;
     color: white;
@@ -294,7 +337,12 @@ a.next, input[type=submit], #pagination a {
     border-radius: 10px;
     border: solid #91417D 1px;
 }
-a.next:hover, input[type=submit]:hover, #pagination a:hover, #pagination strong {
+a.next {
+    padding: 6px;
+}
+a.next:hover, input[type=submit]:hover, 
+#pagination a:hover, #pagination strong, 
+#alphabet a:hover, #alphabet strong {
     color: #91417D;
     background: white;
     cursor: hand;
@@ -309,9 +357,9 @@ a.next:hover, input[type=submit]:hover, #pagination a:hover, #pagination strong 
     padding: 3px;
 }
 .product .description {
-    height: 120px;
+    height: 110px;
 }
-.product .availability {
+/*.product .availability {
     text-align: left;
 }
 .product .code {
@@ -321,6 +369,39 @@ a.next:hover, input[type=submit]:hover, #pagination a:hover, #pagination strong 
 }
 .product .price {
     text-align: right;
+    font-size: 110%;
+}
+.product .controls {
+    text-align: right;
+}*/
+.product .info .other * {
+    margin: 0;
+    padding: 0;
+
+}
+.product .info .other form input {
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-bottom: dotted #888 1px;
+    text-align: right;
+}
+.product .info .other form input[type=submit] {
+    padding: 0 7px;
+    border: solid #91417D 1px;
+}
+*:first-child+html .product .info .other form input[type=submit] { /* IE 7 */
+    padding: 0 7px 0 0;
+}
+.product .code {
+    font-size: 70%;
+}
+.product .info .price, .product .info .other {
+    height: 48px;
+}
+.product .price {
+    font-size: 150%;
+    line-height: 48px;
 }
 .cart {
     width: 100%;
@@ -345,7 +426,7 @@ a.next:hover, input[type=submit]:hover, #pagination a:hover, #pagination strong 
     font-size: inherit;
     border: none;
     background: transparent;
-    color: inherit;
+    color: #91417D;
     text-align: right;
 }
 .cart input[type=text] {
@@ -353,11 +434,53 @@ a.next:hover, input[type=submit]:hover, #pagination a:hover, #pagination strong 
 }
 .cart input:hover {
     background: transparent;
-    color: inherit;
 }
 .cart .total, .cart .price, .cart .amount {
     text-align: right;
 }
-#pagination {
+#pagination, #alphabet {
+    text-align: center;
+}
+.product-header {
+    margin-top: 3px;
+}
+#product .side {
+    text-align: center;
+}
+#product .info {
+    margin: 10px; 
+    padding: 10px;
+    background: #eee;
+}
+#product .info .price {
+    margin-top: 30px;
+    font-size: 200%;
+    font-weight: bold;
+}
+#product .info .availability {
+    font-style: italic;
+}
+#product .info .cart {
+    /*font-weight: bold;*/
+    font-style: italic;
+    margin-top: 30px;
+}
+#product .info .cart p {
+    margin: 0;
+    padding: 0;
+    display: block;
+}
+#product input {
+    font-weight: inherit;
+    font-style: inherit;
+}
+form .required {
+    font-weight: bold;
+}
+form th {
+    font-weight: normal;
+}
+form .info {
+    font-style: italic;
     text-align: center;
 }

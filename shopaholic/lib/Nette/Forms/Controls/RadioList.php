@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: RadioList.php 329 2009-05-28 20:18:49Z david@grudl.com $
+ * @version    $Id: RadioList.php 224 2009-03-10 07:46:40Z david@grudl.com $
  */
 
 
@@ -30,10 +30,6 @@ require_once dirname(__FILE__) . '/../../Forms/Controls/FormControl.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Forms
- *
- * @property   array $items
- * @property-read Html $separatorPrototype
- * @property-read Html $containerPrototype
  */
 class RadioList extends FormControl
 {
@@ -52,7 +48,7 @@ class RadioList extends FormControl
 	 * @param  string  label
 	 * @param  array   options from which to choose
 	 */
-	public function __construct($label = NULL, array $items = NULL)
+	public function __construct($label, array $items = NULL)
 	{
 		parent::__construct($label);
 		$this->control->type = 'radio';

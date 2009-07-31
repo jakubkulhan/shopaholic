@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Templates
- * @version    $Id: SnippetHelper.php 354 2009-06-16 11:33:13Z david@grudl.com $
+ * @version    $Id: SnippetHelper.php 285 2009-04-27 18:52:23Z david@grudl.com $
  */
 
 
@@ -93,6 +93,9 @@ class SnippetHelper extends Object
 		} else {  // finish snippet buffering
 			if ($this->level !== ob_get_level()) {
 				throw new InvalidStateException("Snippet '$this->id' cannot be ended here.");
+			}
+			if (empty($this->payload->snippets)) { // PHP 5.2.0 bug workaround
+				$this->payload->snippets = new ArrayObject;
 			}
 			$this->payload->snippets[$this->id] = ob_get_clean();
 			self::$outputAllowed = FALSE;

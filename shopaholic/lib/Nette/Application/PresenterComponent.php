@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Application
- * @version    $Id: PresenterComponent.php 385 2009-06-26 23:25:27Z david@grudl.com $
+ * @version    $Id: PresenterComponent.php 248 2009-03-30 04:38:25Z david@grudl.com $
  */
 
 
@@ -38,8 +38,6 @@ require_once dirname(__FILE__) . '/../Application/IStatePersistent.php';
  * @author     David Grudl
  * @copyright  Copyright (c) 2004, 2009 David Grudl
  * @package    Nette\Application
- *
- * @property-read Presenter $presenter
  */
 abstract class PresenterComponent extends ComponentContainer implements ISignalReceiver, IStatePersistent
 {
@@ -293,12 +291,6 @@ abstract class PresenterComponent extends ComponentContainer implements ISignalR
 
 
 
-	/**
-	 * Returns destination as Link object.
-	 * @param  string   destination in format "[[module:]presenter:]view" or "signal!"
-	 * @param  array|mixed
-	 * @return Link
-	 */
 	public function lazyLink($destination, $args = array())
 	{
 		if (!is_array($args)) {
@@ -311,12 +303,9 @@ abstract class PresenterComponent extends ComponentContainer implements ISignalR
 
 
 
-	/**
-	 * @deprecated
-	 */
 	public function ajaxLink($destination, $args = array())
 	{
-		throw new DeprecatedException(__METHOD__ . '() is deprecated.');
+		return $this->getPresenter()->getAjaxDriver()->link($destination === NULL ? NULL : $this->link($destination, $args));
 	}
 
 

@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette\Forms
- * @version    $Id: InstantClientScript.php 344 2009-06-14 23:22:02Z david@grudl.com $
+ * @version    $Id: InstantClientScript.php 201 2009-01-28 05:56:46Z david@grudl.com $
  */
 
 
@@ -276,7 +276,7 @@ final class InstantClientScript extends Object
 				. ($arg[1] === NULL ? "true" : "val.length<=" . (int) $arg[1]) . ";";
 
 		case $operation === ':email' && $control instanceof TextBase:
-			return $this->getValueScript($control) . 'res = /^[^@\s]+@[^@\s]+\.[a-z]{2,10}$/i.test(val);';
+			return $this->getValueScript($control) . 'res = /^[^@]+@[^@]+\.[a-z]{2,6}$/i.test(val);';
 
 		case $operation === ':url' && $control instanceof TextBase:
 			return $this->getValueScript($control) . 'res = /^.+\.[a-z]{2,6}(\\/.*)?$/i.test(val);';

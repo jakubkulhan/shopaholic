@@ -15,7 +15,7 @@
  * @link       http://nettephp.com
  * @category   Nette
  * @package    Nette
- * @version    $Id: Tools.php 305 2009-05-06 21:15:25Z david@grudl.com $
+ * @version    $Id: Tools.php 286 2009-04-30 19:52:52Z jakub.vrana $
  */
 
 
@@ -29,22 +29,13 @@
  */
 final class Tools
 {
-	/** minute in seconds */
-	const MINUTE = 60;
-
 	/** hour in seconds */
 	const HOUR = 3600;
 
 	/** day in seconds */
 	const DAY = 86400;
 
-	/** week in seconds */
-	const WEEK = 604800;
-
-	/** average month in seconds */
-	const MONTH = 2629800;
-
-	/** average year in seconds */
+	/** year in seconds */
 	const YEAR = 31557600;
 
 
