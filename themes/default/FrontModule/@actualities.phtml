@@ -1,0 +1,12 @@
+{if !empty($actualities)}
+    {foreach $actualities as $_}
+        <div class="actuality row">
+            <p>
+                <strong class="column grid-2">{$_->getAddedAt()|date:'%d. %m. %Y, %H:%I:%S'}</strong>
+                <span class="column grid-7">{$_->getName()}</span>
+            </p>
+        </div>
+    {/foreach}
+{else}
+    <p>{=__('There are no actualities.')}</p>
+{/if}

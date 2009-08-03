@@ -11,6 +11,18 @@ final class Back_ContentPresenter extends Back_BasePresenter
         $this->template->changes = mapper::products()->findPriceChanges($product_id);
     }
 
+    public function actionDeleteActuality($nice_name)
+    {
+        mapper::actualities()->deleteOne($nice_name);
+        $this->redirect('actualities');
+        $this->terminate();
+    }
+
+    public function actionEditActuality($nice_name)
+    {
+        $this->template->actuality = mapper::pages()->findByNiceName($nice_name)->getRef()->__toArray();
+    }
+
     public function actionDeletePage($nice_name)
     {
         mapper::pages()->deleteOne($nice_name);
@@ -163,6 +175,25 @@ final class Back_ContentPresenter extends Back_BasePresenter
         fulltext::index()->optimize();
         $this->redirect('fulltext');
         $this->terminate();
+    }
+
+    public function renderActualities()
+    {
+        $this->template->title = __('Actualities');
+        $this->template->actualities = mapper::actualities()->findAll();
+    }
+
+    public function renderEditActuality()
+    {
+        $this->template->title = $this->template->actuality['name'] . ' – ' . __('Edit actuality');
+        $this->template->form = $this->getComponent('actualityEditForm');
+        $this->template->form->setDefaults($this->template->actuality);
+    }
+
+    public function renderAddActuality()
+    {
+        $this->template->title = __('Add actuality');
+        $this->template->form = $this->getComponent('actualityAddFrom');
     }
 
     public function renderPriceChanges()
@@ -341,24 +372,22 @@ final class Back_ContentPresenter extends Back_BasePresenter
         switch ($name) {
             case 'pageAddForm':
             case 'pageEditForm':
-                if (!isset($prefix_len)) {
-                    $prefix_len = strlen('page');
-                }
+                if (!isset($prefix_len)) $prefix_len = strlen('page');
+            case 'actualityAddFrom':
+            case 'actualityEditForm':
+                if (!isset($prefix_len)) $prefix_len = strlen('actuality');
             case 'manufacturerAddForm':
             case 'manufacturerEditForm':
-                if (!isset($prefix_len)) {
-                    $prefix_len = strlen('manufacturer');
-                }
+                if (!isset($prefix_len)) $prefix_len = strlen('manufacturer');
             case 'categoryAddForm':
             case 'categoryEditForm':
-                if (!isset($prefix_len)) {
-                    $prefix_len = strlen('category');
-                }
+                if (!isset($prefix_len)) $prefix_len = strlen('category');
             case 'productAddForm':
             case 'productEditForm':
-                if (!isset($prefix_len)) {
-                    $prefix_len = strlen('product');
-                }
+                if (!isset($prefix_len)) $prefix_len = strlen('product');
+
+                // form itself
+
                 $action = substr($name, $prefix_len);
                 $action = substr($action, 0, strlen($action) - 4);
 
@@ -384,7 +413,6 @@ final class Back_ContentPresenter extends Back_BasePresenter
                 if (strncmp($name, 'category', 8) === 0) {
                     $form->addHidden('id');
                 }
-
 
                 // metas
                 $form->addText('meta_keywords', __('META keywords:'));
@@ -537,6 +565,32 @@ final class Back_ContentPresenter extends Back_BasePresenter
 
         mapper::pages()->updateOne($form->getValues());
         $this->redirect('pages');
+        $this->terminate();
+    }
+
+    public function onActualityAddSubmit(Form $form)
+    {
+        if (!$form->isValid()) {
+            return ;
+        }
+
+        if (mapper::actualities()->insertOne($form->getValues())) {
+            $this->redirect('actualities');
+            $this->terminate();
+            return;
+        }
+
+        $form->addError(__('Cannot add actuality.'));
+    }
+
+    public function onActualityEditSubmit(Form $form)
+    {
+        if (!$form->isValid()) {
+            return ;
+        }
+
+        mapper::actualities()->updateOne($form->getValues());
+        $this->redirect('actualities');
         $this->terminate();
     }
 

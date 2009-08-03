@@ -14,10 +14,15 @@ CREATE TABLE shopaholic_pages (
     meta_description TEXT,
     picture_id BIGINT,
     ref_id BIGINT,
-    ref_type CHAR(16), -- P (product), C (category), M (manufacturer)
+    ref_type CHAR(16), -- P (product), C (category), M (manufacturer), A (actuality)
     INDEX USING HASH (nice_name),
     INDEX (picture_id),
     INDEX (ref_id, ref_type)
+) ENGINE=InnoDB;
+
+CREATE TABLE shopaholic_actualities (
+    id SERIAL NOT NULL PRIMARY KEY,
+    added_at DATETIME NOT NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE shopaholic_product_availabilities (

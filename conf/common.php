@@ -1,6 +1,6 @@
 <?php
 return array(
-    'baseUri' => '/~jakub/eshop',
+    'baseUri' => '/~jakub/shopaholic',
     'datetimeFormat' => 'j. n. Y, H:i:s',
     'adminEmail' => 'admin@example.com'
 );

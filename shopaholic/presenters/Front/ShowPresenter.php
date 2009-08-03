@@ -11,11 +11,11 @@ final class Front_ShowPresenter extends Front_BasePresenter
         $rest = implode('/', $path);
 
         // what's with rest?
-        /*if (!empty($rest)) {
+        if (!empty($rest)) {
             $this->redirect(301, 'this', $last);
             $this->terminate();
             return ;
-        }*/
+        }
 
         // default page?
         if (empty($last)) {
@@ -53,7 +53,8 @@ final class Front_ShowPresenter extends Front_BasePresenter
         $this->template->registerHelper('expand_commands', array(__CLASS__, 'expandCommands'));
         self::$expandCommandsFns = array(
             'products' => array($this, 'listProducts'),
-            'random_products' => array($this, 'listRandomProducts')
+            'random_products' => array($this, 'listRandomProducts'),
+            'latest_actualities' => array($this, 'listLatestActualities')
         );
     }
 
@@ -97,6 +98,10 @@ final class Front_ShowPresenter extends Front_BasePresenter
             ->findForNavByProductId($this->template->product->getId());
     }
 
+    public function renderActuality()
+    {
+    }
+
     public static function expandCommands($text)
     {
         return preg_replace_callback('~\{([A-Za-z0-9_]+)\s*(.*?)\s*\}~',
@@ -138,6 +143,18 @@ final class Front_ShowPresenter extends Front_BasePresenter
         $template->presenter = $this;
         $template->control = $this;
         $template->products = mapper::products()->findRandom($count);
+        return "/---html\n" . $template->__toString() . "\n\\---\n";
+    }
+
+    public function listLatestActualities($count)
+    {
+
+        $template = clone $this->template;
+        $template->setFile(Environment::expand('%templatesDir%/FrontModule/@actualities.phtml'));
+        $template->presenter = $this;
+        $template->control = $this;
+        $template->actualities = mapper::actualities()->findLatest($count);
+
         return "/---html\n" . $template->__toString() . "\n\\---\n";
     }
 }

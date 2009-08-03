@@ -323,10 +323,14 @@ a.no-hover:hover {
 .statistics, .price-changes, .products {
     width: 100%;
 }
-.statistics tr, .price-changes tr, .products tr {
+.statistics tr, .price-changes tr, .products tr, .actualities tr {
     border-bottom: solid #eee 1px;
 }
-.statistics th, .statistics td, .price-changes th, .price-changes td, .products th, .products td {
+.statistics th, .statistics td, 
+.price-changes th, .price-changes td, 
+.products th, .products td,
+.actualities th, .actualities td
+{
     padding: 5px;
 }
 .statistics .value {
@@ -350,5 +354,19 @@ p {
     text-align: center;
 }
 #pagination {
+    text-align: center;
+}
+.actualities {
+    width: 100%;
+}
+.actualities .added_at {
+    width: 15%;
+}
+.actualities .name {
+    width: 55%;
+    overflow: hidden;
+}
+.actualities .controls {
+    width: 25%;
     text-align: center;
 }

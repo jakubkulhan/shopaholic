@@ -1,0 +1,24 @@
+{if !empty($actualities)}
+    <table class="actualities">
+        <tr>
+            <th class="added_at">{=__('Added at')}</th>
+            <th class="name">{=__('Name')}</th>
+            <th class="controls">&nbsp;</th>
+        </tr>
+    {foreach $actualities as $_}
+        <tr>
+            <td class="added_at">{$_->getAddedAt()|date:'%d. %m. %Y, H:i:s'}</td>
+            <td class="name">{$_->getName()}</td>
+            <td class="controls">
+                <a href="{link Content:editActuality, $_->getNiceName()}">✎&nbsp;{=__('Edit')}</a>
+                <a href="{link Content:deleteActuality, $_->getNiceName()}" onclick="return confirm('{!=__('Do you really want to delete this actuality?')}');">⊗&nbsp;{=__('Delete')}</a>
+            </td>
+        </tr>
+    {/foreach}
+    </table>
+{else}
+    <p style="text-align: center; border-bottom: solid #eee 1px; padding: 30px;" class="warning">{=__('There are no actualities.')}</p>
+{/if}
+<div class="controls" style="text-align: center; font-size: 150%; padding: 20px;">
+    <a href="{link Content:addActuality}">⊕&nbsp;{=__('Add')}</a>
+</div>

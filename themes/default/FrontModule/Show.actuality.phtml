@@ -1,0 +1,5 @@
+<h1>{$actuality->getName()}</h1>
+{if $actuality->getPicture()}
+    <img src="{=Environment::expand('%mediaBaseUri%/' . $actuality->getPicture()->getFile())}" alt="{$actuality->getName()}" style="float: right; margin: 10px;">
+{/if}
+{!$actuality->getContent()|texy}

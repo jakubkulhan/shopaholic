@@ -6,7 +6,7 @@ php_flag register_globals off
 RewriteEngine On
 
 # same as baseUri in conf/common.php
-RewriteBase /~jakub/eshop
+RewriteBase /~jakub/shopaholic
 
 # front controller
 RewriteCond %{REQUEST_FILENAME} !-f

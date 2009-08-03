@@ -17,6 +17,11 @@ final class pages extends mapper
     const MANUFACTURER = 'M';
 
     /**
+     * It is actuality
+     */
+    const ACTUALITY = 'A';
+
+    /**
      * @var array Not refs
      */
     private $not_ref = NULL;
@@ -27,7 +32,8 @@ final class pages extends mapper
     private static $type2mapper = array(
         self::PRODUCT => 'products',
         self::CATEGORY => 'categories',
-        self::MANUFACTURER => 'manufacturers'
+        self::MANUFACTURER => 'manufacturers',
+        self::ACTUALITY => 'actualities'
     );
 
     /**

@@ -163,6 +163,14 @@ abstract class mapper extends /*Nette\*/Object
         return self::object('products');
     }
 
+    /**
+     * actualities mapper
+     * @return actualities
+     */
+    public static function actualities()
+    {
+        return self::object('actualities');
+    }
 
     /**
      * Should not be constructed outside of mapper
