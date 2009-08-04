@@ -20,6 +20,7 @@ final class Front_ShowPresenter extends Front_BasePresenter
         // default page?
         if (empty($last)) {
             $this->setView('default');
+            $this->template->path = '';
             $this->template->page = NULL;
             return ;
         }
