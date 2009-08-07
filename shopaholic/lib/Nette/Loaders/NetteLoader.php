@@ -193,7 +193,11 @@ class NetteLoader extends AutoLoader
 		'uri' => '/Web/Uri.php',
 		'uriscript' => '/Web/UriScript.php',
 		'user' => '/Web/User.php',
-		'userclientscript' => '/Forms/Renderers/UserClientScript.php',
+        'userclientscript' => '/Forms/Renderers/UserClientScript.php',
+        'sendmailmailer' => '/Mail/SendmailMailer.php',
+        'mail' => '/Mail/Mail.php',
+        'imailer' => '/Mail/IMailer.php',
+        'mailmimepart' => '/Mail/MailMimePart.php',
 	);
 
 
