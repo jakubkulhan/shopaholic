@@ -192,6 +192,7 @@ return array (
     'Provision has to be between 0 and 99.' => 'Provize musí být mezi 0 a 99.',
     'Provison has to be a number.' => 'Provize musí být číslo.',
     'Query:' => 'Dotaz:',
+    'Recently visited products' => 'Naposledy navštívené produkty',
     'Rename to:' => 'Přejmenovat na:',
     'Save' => 'Uložit',
     'Search' => 'Hledat',

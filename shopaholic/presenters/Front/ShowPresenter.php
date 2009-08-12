@@ -95,6 +95,33 @@ final class Front_ShowPresenter extends Front_BasePresenter
 
     public function renderProduct()
     {
+        // recent products
+        if (!isset(Environment::getSession(SESSION_RECENTPRODUCTS_NS)->recent)) {
+            Environment::getSession(SESSION_RECENTPRODUCTS_NS)->recent = array();
+        }
+        array_unshift(
+            Environment::getSession(SESSION_RECENTPRODUCTS_NS)->recent,
+            $this->template->product
+        );
+
+        $already_in = array();
+        foreach (Environment::getSession(SESSION_RECENTPRODUCTS_NS)->recent as &$_) {
+            $id = $_->getId();
+            if (isset($already_in[$id])) {
+                $_ = FALSE;
+            }
+
+            $already_in[$id] = TRUE;
+        }
+
+        Environment::getSession(SESSION_RECENTPRODUCTS_NS)->recent = 
+            array_slice(
+                array_filter(Environment::getSession(SESSION_RECENTPRODUCTS_NS)->recent),
+                0,
+                5
+            );
+
+        // fill template
         $this->template->nav = mapper::categories()
             ->findForNavByProductId($this->template->product->getId());
     }

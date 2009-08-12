@@ -66,6 +66,16 @@
                         {/if}
                     </ul>
                     {/if}*}
+
+                    {if !empty($side->recent_products)}
+                    <h2>{=__('Recently visited products')}</h2>
+                    <ul>
+                    {foreach $side->recent_products as $_}
+                        <li><a href="{link Show:default, $_->getNiceName()}">{$_->getName()}</a></li>
+                    {/foreach}
+                    </ul>
+                    {/if}
+
                     {if !empty($side->categories)}
                     <h2>{=__('Categories')}</h2>
                     <ul>

@@ -24,6 +24,7 @@ abstract class Front_BasePresenter extends /*Nette\Application\*/Presenter
         $side['manufacturers'] = mapper::manufacturers()->findAll();
         $side['pages'] = mapper::pages()->findNotRef();
         $side['cart'] = Environment::getSession(SESSION_ORDER_NS);
+        $side['recent_products'] = Environment::getSession(SESSION_RECENTPRODUCTS_NS)->recent;
 
         $this->template->side = (object) $side;
     }
