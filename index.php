@@ -15,5 +15,6 @@ define('SESSION_SEARCH_NS', 'search');
 define('SESSION_RECENTPRODUCTS_NS', 'recentproducts');
 define('FULLTEXT_DIR', BASE_DIR . '/fulltext');
 define('ADMINLOG_DIR', BASE_DIR . '/log/admin');
+define('SEARCHLOG_DIR', BASE_DIR . '/log/search');
 
 require_once APP_DIR . '/bootstrap.php';

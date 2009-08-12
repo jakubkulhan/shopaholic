@@ -5,6 +5,7 @@ final class Front_SearchPresenter extends Front_BasePresenter
     {
         parent::startup();
         fulltext::init(FULLTEXT_DIR);
+        searchlog::init(SEARCHLOG_DIR);
     }
 
     public function renderDefault($q, $page = 1)
@@ -28,6 +29,8 @@ final class Front_SearchPresenter extends Front_BasePresenter
             $this->template->q = $q;
 
             Environment::getSession(SESSION_SEARCH_NS)->last = $q;
+
+            searchlog::log($q);
 
         } catch (Exception $e) {
             $this->template->products = array();
