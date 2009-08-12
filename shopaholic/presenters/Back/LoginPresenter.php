@@ -3,6 +3,8 @@ final class Back_LoginPresenter extends /*Nette\Application\*/Presenter
 {
     public function startup()
     {
+        adminlog::init(ADMINLOG_DIR);
+
         if (Environment::getUser()->isAuthenticated() && $this->getAction() !== 'logout') {
             $this->redirect('Dashboard:default');
             $this->terminate();
@@ -11,7 +13,9 @@ final class Back_LoginPresenter extends /*Nette\Application\*/Presenter
 
     public function actionLogout()
     {
+        adminlog::log(__('"%s" logged out'), Environment::getUser()->getIdentity()->getName());
         Environment::getUser()->signOut(TRUE);
+
         $this->redirect('Dashboard:default');
         $this->terminate();
     }
@@ -63,9 +67,12 @@ final class Back_LoginPresenter extends /*Nette\Application\*/Presenter
         $values = $form->getValues();
         try {
             $user->authenticate($values['username'], $values['password']);
+            adminlog::log(__('Successfully logged in as "%s"'), Environment::getUser()->getIdentity()->getName());
+
             $this->redirect('Dashboard:default');
             $this->terminate();
         } catch (AuthenticationException $e) {
+            adminlog::log(__('Unsuccessful log in (username: "%s", password: "%s")'), $values['username'], $values['password']);
             $this->template->error = $e;
         }
     }

@@ -12,5 +12,6 @@ define('TIMEZONE_FILE', CONF_DIR . '/timezone.php');
 define('LOCALE_FILE', CONF_DIR . '/locale.php');
 define('SESSION_ORDER_NS', 'order');
 define('FULLTEXT_DIR', BASE_DIR . '/fulltext');
+define('ADMINLOG_DIR', BASE_DIR . '/log/admin');
 
 require_once APP_DIR . '/bootstrap.php';

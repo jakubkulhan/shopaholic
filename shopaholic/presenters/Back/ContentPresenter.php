@@ -14,6 +14,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
     public function actionDeleteActuality($nice_name)
     {
         mapper::actualities()->deleteOne($nice_name);
+        adminlog::log(__('Deleted actuality "%s"'), $nice_name);
         $this->redirect('actualities');
         $this->terminate();
     }
@@ -26,6 +27,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
     public function actionDeletePage($nice_name)
     {
         mapper::pages()->deleteOne($nice_name);
+        adminlog::log(__('Deleted page "%s"'), $nice_name);
         $this->redirect('pages');
         $this->terminate();
     }
@@ -41,6 +43,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
         if ($manufacturer) {
             mapper::manufacturers()->deleteOne($manufacturer);
         }
+        adminlog::log(__('Deleted manufacturer "%s"'), $nice_name);
         $this->redirect('manufacturers');
         $this->terminate();
     }
@@ -71,7 +74,10 @@ final class Back_ContentPresenter extends Back_BasePresenter
     public function actionDeletePicture($id)
     {
         $id = intval($id);
-        mapper::pictures()->deleteOne($id);
+        if ($picture = mapper::pictures()->findById($id)) {
+            mapper::pictures()->deleteOne($id);
+            adminlog::log(__('Deleted picture "%s"'), $picture->getFile());
+        }
         $this->redirect('pictures');
         $this->terminate();
     }
@@ -81,6 +87,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
         $product = mapper::products()->findByNiceName($nice_name);
         if ($product) {
             mapper::products()->deleteOne($product);
+            adminlog::log(__('Deleted product "%s"'), $nice_name);
         }
 
         $this->redirect('products');
@@ -100,9 +107,6 @@ final class Back_ContentPresenter extends Back_BasePresenter
 
     public function actionFulltext()
     {
-        // init
-        fulltext::init(FULLTEXT_DIR);
-
         // get dirty
         $this->template->num_docs = fulltext::index()->numDocs();
         $this->template->dirty = fulltext::dirty();
@@ -111,6 +115,11 @@ final class Back_ContentPresenter extends Back_BasePresenter
         // index
         $index = fulltext::index();
         $this->template->update_now = array_slice($this->template->dirty, 0, 50);
+
+        if (!empty($this->template->update_now)) {
+            adminlog::log(__('Attempt to update fulltext'));
+        }
+
         foreach (mapper::products()->findByIds($this->template->update_now) as $product) {
             // delete old
             foreach ($index->termDocs(
@@ -155,8 +164,16 @@ final class Back_ContentPresenter extends Back_BasePresenter
             $doc->addField(Zend_Search_Lucene_Field::UnStored('description', $description));
 
             $index->addDocument($doc);
-            fulltext::dirty($product->getId(), FALSE);
         }
+
+        // undirty updated
+        foreach ($this->template->update_now as $id) {
+            fulltext::dirty($id, FALSE);
+        }
+
+        // log
+        adminlog::log(__('Successfully updated %d fulltext items, %d remains'), 
+            count($this->template->update_now), $this->template->num_dirty - count($this->template->update_now));
 
         // refresh
         $s = 5;
@@ -168,11 +185,13 @@ final class Back_ContentPresenter extends Back_BasePresenter
 
     public function actionOptimizeFulltext()
     {
-        // init
-        fulltext::init(FULLTEXT_DIR);
+        adminlog::log(__('Attempt to optimize fulltext'));
 
         // optimize
         fulltext::index()->optimize();
+
+        adminlog::log(__('Sucessfully optimized fulltext'));
+
         $this->redirect('fulltext');
         $this->terminate();
     }
@@ -549,6 +568,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
         }
 
         if (mapper::pages()->insertOne($form->getValues())) {
+            adminlog::log(__('Added page "%s"'), $form['nice_name']->getValue());
             $this->redirect('pages');
             $this->terminate();
             return;
@@ -564,6 +584,9 @@ final class Back_ContentPresenter extends Back_BasePresenter
         }
 
         mapper::pages()->updateOne($form->getValues());
+
+        adminlog::log(__('Updated page "%s"'), $form['nice_name']->getValue());
+
         $this->redirect('pages');
         $this->terminate();
     }
@@ -575,6 +598,8 @@ final class Back_ContentPresenter extends Back_BasePresenter
         }
 
         if (mapper::actualities()->insertOne($form->getValues())) {
+            adminlog::log(__('Added actuality "%s"'), $form['nice_name']->getValue());
+
             $this->redirect('actualities');
             $this->terminate();
             return;
@@ -590,6 +615,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
         }
 
         mapper::actualities()->updateOne($form->getValues());
+        adminlog::log(__('Updated actuality "%s"'), $form['nice_name']->getValue());
         $this->redirect('actualities');
         $this->terminate();
     }
@@ -601,6 +627,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
         }
 
         if (mapper::manufacturers()->insertOne($form->getValues())) {
+            adminlog::log(__('Added manufacturer "%s"'), $form['nice_name']->getValue());
             $this->redirect('manufacturers');
             $this->terminate();
             return;
@@ -616,6 +643,9 @@ final class Back_ContentPresenter extends Back_BasePresenter
         }
 
         mapper::manufacturers()->updateOne($form->getValues());
+
+        adminlog::log(__('Updated manufacturer "%s"'), $form['nice_name']->getValue());
+
         $this->redirect('manufacturers');
         $this->terminate();
     }
@@ -638,7 +668,10 @@ final class Back_ContentPresenter extends Back_BasePresenter
     {
         $values = $this->getComponent('categoriesForm')->getValues();
         if ($values['id'] != 0) {
-            mapper::categories()->deleteOne($values['id']);
+            if ($category = mapper::categories()->findById($values['id'])) {
+                mapper::categories()->deleteOne($values['id']);
+                adminlog::log(__('Deleted category "%s"'), $category->getNiceName());
+            }
         }
         $this->redirect('categories');
         $this->terminate();
@@ -656,6 +689,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
         unset($values['id']);
 
         mapper::categories()->addOne($values, $parent_id);
+        adminlog::log(__('Added category "%s"'), $form['nice_name']->getValue());
         $this->redirect('categories');
         $this->terminate();
     }
@@ -667,6 +701,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
         }
 
         mapper::categories()->updateOne($form->getValues());
+        adminlog::log(__('Updated category "%s"'), $form['nice_name']->getValue());
         $this->redirect('categories');
         $this->terminate();
     }
@@ -715,12 +750,12 @@ final class Back_ContentPresenter extends Back_BasePresenter
             $big_filename .= '.png';
         }
 
-        /*if ($need_resave) {
+        if ($need_resave) {
             $image = $file->getImage();
             $image->save(Environment::expand('%mediaDir%/' . $big_filename));
         } else {
             $file->move(Environment::expand('%mediaDir%/' . $big_filename));
-        }*/
+        }
         $image = $file->getImage();
         $image->resize(300, 300, Image::ENLARGE);
         $image->save(Environment::expand('%mediaDir%/' . $big_filename));
@@ -729,6 +764,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
         if (!mapper::pictures()->insertOne($big_filename, $thumbnail_filename, $form['description']->getValue())) {
             $form->addError(__('Cannot save image data into the database, try again.'));
         } else {
+            adminlog::log(__('Added picture "%s"'), $big_filename);
             $this->redirect('pictures');
             $this->terminate();
         }
@@ -740,8 +776,8 @@ final class Back_ContentPresenter extends Back_BasePresenter
             return ;
         }
 
-        fulltext::init(FULLTEXT_DIR);
         mapper::products()->insertOne($form->getValues());
+        adminlog::log(__('Added product "%s"'), $form['nice_name']->getValue());
         $this->redirect('products');
         $this->terminate();
     }
@@ -752,8 +788,8 @@ final class Back_ContentPresenter extends Back_BasePresenter
             return ;
         }
 
-        fulltext::init(FULLTEXT_DIR);
         mapper::products()->updateOne($form->getValues());
+        adminlog::log(__('Updated product "%s"'), $form['nice_name']->getValue());
         $this->redirect('products');
         $this->terminate();
     }
@@ -768,7 +804,10 @@ final class Back_ContentPresenter extends Back_BasePresenter
     public function onAvailabilitiesFormDelete(SubmitButton $b)
     {
         $form = $this->getComponent('availabilitiesForm');
-        mapper::product_availabilities()->deleteOne($form['id']->getValue());
+        if ($availability = mapper::product_availabilities()->findById($form['id']->getValue())) {
+            mapper::product_availabilities()->deleteOne($form['id']->getValue());
+            adminlog::log(__('Deleted availability "%s"'), $availability->getName());
+        }
         $this->redirect('availabilities');
         $this->terminate();
     }
@@ -780,6 +819,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
         }
 
         mapper::product_availabilities()->insertOne($form->getValues());
+        adminlog::log(__('Added availability "%s"'), $form['name']->getValue());
         $this->redirect('availabilities');
         $this->terminate();
     }
@@ -791,6 +831,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
         }
 
         mapper::product_availabilities()->updateOne($form->getValues());
+        adminlog::log(__('Updated availability "%s"'), $form['name']->getValue());
         $this->redirect('availabilities');
         $this->terminate();
     }
@@ -814,6 +855,8 @@ final class Back_ContentPresenter extends Back_BasePresenter
             $form->addError(__('Cannot write to file.'));
             return ;
         }
+
+        adminlog::log(__('Updated title page'), $form['content']->getValue());
 
         $this->redirect('this');
         $this->terminate();

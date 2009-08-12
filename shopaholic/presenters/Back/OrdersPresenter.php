@@ -258,6 +258,7 @@ final class Back_OrdersPresenter extends Back_BasePresenter
         }
 
         mapper::order_statuses()->insertOne($form->getValues());
+        adminlog::log(__('Added order status "%s"'), $form['name']->getValue());
         $this->redirect('manageStatuses');
         $this->terminate();
     }
@@ -269,6 +270,7 @@ final class Back_OrdersPresenter extends Back_BasePresenter
         }
 
         mapper::order_statuses()->updateOne($form->getValues());
+        adminlog::log(__('Updated order status "%s"'), $form['name']->getValue());
         $this->redirect('manageStatuses');
         $this->terminate();
     }
@@ -287,6 +289,7 @@ final class Back_OrdersPresenter extends Back_BasePresenter
         }
 
         mapper::order_payment_types()->insertOne($form->getValues());
+        adminlog::log(__('Added order payment type "%s"'), $form['name']->getValue());
         $this->redirect('managePaymentTypes');
         $this->terminate();
     }
@@ -298,6 +301,7 @@ final class Back_OrdersPresenter extends Back_BasePresenter
         }
 
         mapper::order_payment_types()->updateOne($form->getValues());
+        adminlog::log(__('Updated order payment type "%s"'), $form['name']->getValue());
         $this->redirect('managePaymentTypes');
         $this->terminate();
     }
@@ -316,6 +320,7 @@ final class Back_OrdersPresenter extends Back_BasePresenter
         }
 
         mapper::order_delivery_types()->insertOne($form->getValues());
+        adminlog::log(__('Added order delivery type "%s"'), $form['name']->getValue());
         $this->redirect('manageDeliveryTypes');
         $this->terminate();
     }
@@ -327,6 +332,7 @@ final class Back_OrdersPresenter extends Back_BasePresenter
         }
 
         mapper::order_delivery_types()->updateOne($form->getValues());
+        adminlog::log(__('Updated order delivery type "%s"'), $form['name']->getValue());
         $this->redirect('manageDeliveryTypes');
         $this->terminate();
     }
@@ -337,7 +343,10 @@ final class Back_OrdersPresenter extends Back_BasePresenter
             return ;
         }
 
-        mapper::orders()->updateOne($form->getValues());
+        if ($status = mapper::order_statuses()->findById($form['status_id']->getValue())) {
+            mapper::orders()->updateOne($form->getValues());
+            adminlog::log(__('Changed status of order "%d" to "%s"'), $form['id']->getValue(), $status->getName());
+        }
         $this->redirect('this');
         $this->terminate();
     }

@@ -102,6 +102,8 @@ final class Back_SettingsPresenter extends Back_BasePresenter
             return ;
         }
 
+        adminlog::log(__('Updated settings'));
+
         $this->redirect('this');
         $this->terminate();
     }
@@ -129,6 +131,8 @@ final class Back_SettingsPresenter extends Back_BasePresenter
         }
 
         Environment::getUser()->signOut(TRUE);
+
+        adminlog::log(__('Changed login credentials, logging out'));
 
         $this->redirect('this');
         $this->terminate();

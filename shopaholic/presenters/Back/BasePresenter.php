@@ -3,10 +3,15 @@ abstract class Back_BasePresenter extends /*Nette\Application\*/Presenter
 {
     public function startup()
     {
+        adminlog::init(ADMINLOG_DIR);
+
         if (!Environment::getUser()->isAuthenticated()) {
             $this->redirect('Login:default');
             $this->terminate();
+            return ;
         }
+
+        fulltext::init(FULLTEXT_DIR);
     }
 
     public function beforeRender()
