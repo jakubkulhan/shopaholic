@@ -35,4 +35,21 @@ final class searchlog extends baselog
 
         parent::log(str_replace('%', '%%', $q));
     }
+
+    /**
+     * Searchlog statistics
+     * @return array
+     */
+    public static function stats()
+    {
+        if (!self::$stats) return array();
+
+        $ret = array();
+        foreach (self::$stats->get('*', 'count') as $q => $_) {
+            $ret[$q] = $_['count'];
+        }
+        arsort($ret);
+
+        return $ret;
+    }
 }

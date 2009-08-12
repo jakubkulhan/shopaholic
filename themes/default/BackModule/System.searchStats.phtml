@@ -1,0 +1,9 @@
+{if !empty($stats)}
+<ul>
+    {foreach $stats as $k => $v}
+    <li>{$k} ({$v})</li>
+    {/foreach}
+</ul>
+{else}
+    <p style="text-align: center; padding: 30px;" class="warning">{=__('There are no statistics.')}</p>
+{/if}
