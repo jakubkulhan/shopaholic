@@ -740,6 +740,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
             return ;
         }
 
+        fulltext::init(FULLTEXT_DIR);
         mapper::products()->insertOne($form->getValues());
         $this->redirect('products');
         $this->terminate();
@@ -751,6 +752,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
             return ;
         }
 
+        fulltext::init(FULLTEXT_DIR);
         mapper::products()->updateOne($form->getValues());
         $this->redirect('products');
         $this->terminate();
