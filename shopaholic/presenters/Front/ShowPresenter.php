@@ -121,6 +121,12 @@ final class Front_ShowPresenter extends Front_BasePresenter
                 5
             );
 
+        // visited products
+        array_push(Environment::getSession(SESSION_ORDER_NS)->visited, array(
+            $this->template->product,
+            time()
+        ));
+
         // fill template
         $this->template->nav = mapper::categories()
             ->findForNavByProductId($this->template->product->getId());

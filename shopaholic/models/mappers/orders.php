@@ -99,8 +99,49 @@ final class orders extends mapper
             return $ret;
 
         } catch (Exception $e) {
-            var_dump($e);
-            exit();
+            return FALSE;
+        }
+    }
+
+    /**
+     * Find visited products
+     * @param order
+     * @return product[]
+     */
+    public function findVisitedProducts(order $order)
+    {
+        try {
+            $result = dibi::query('SELECT [product_id], [visited_at]',
+                'FROM [:prefix:order_visited_products]',
+                'WHERE [order_id] = %i', $order->getId(),
+                'ORDER BY [visited_at]');
+
+            $ids = array();
+            $ret = array();
+
+            foreach ($result as $row) {
+                $ids[$row->product_id] = TRUE;
+                $ret[] = (array) $row;
+            }
+
+            $products = array();
+            foreach (mapper::products()->findByIds(array_keys($ids)) as $product) {
+                $products[$product->getId()] = $product;
+            }
+
+            foreach ($ret as &$_) {
+                if (!isset($products[$_['product_id']])) {
+                    $_ = FALSE;
+                    continue;
+                }
+
+                $_['product'] = $products[$_['product_id']];
+                $_ = (object) $_;
+            }
+
+            return array_filter($ret);
+
+        } catch (Exception $e) {
             return FALSE;
         }
     }
@@ -128,7 +169,6 @@ final class orders extends mapper
             $status_id = dibi::query('SELECT [id] FROM [:prefix:order_statuses] WHERE [initial] = %b', TRUE)->fetchSingle();
             return dibi::query('SELECT COUNT(*) FROM [:prefix:orders] WHERE [status_id] = %i', $status_id)->fetchSingle();
         } catch (Exception $e) {
-            var_dump($e);
             return NULL;
         }
     }
@@ -139,7 +179,7 @@ final class orders extends mapper
      * @param array
      * @return bool
      */
-    public function save(order $order, array $products)
+    public function save(order $order, array $products, array $visited)
     {
         // order data
         $data = $order->__toArray();
@@ -167,12 +207,29 @@ final class orders extends mapper
                 ));
             }
 
+            foreach ($visited as $_) {
+                $values = array('order_id' => $order_id);
+                $values['product_id'] = $_[0]->getId();
+                $values['visited_at'] = date('Y-m-d H:i:s', $_[1]);
+                dibi::query('INSERT INTO [:prefix:order_visited_products]', $values);
+            }
+
             $mail = new Mail;
-            $mail->setFrom(Environment::expand('%shopEmail%'));
-            $mail->addTo($data['email']);
-            $mail->setSubject(__('Your order at %s has been accepted', Environment::expand('%shopName%')));
-            $mail->setBody(str_replace('\n', "\n", __('Hello, your order has been accepted.')));
-            $mail->send();
+            $mail
+                ->setFrom(Environment::expand('%shopEmail%'))
+                ->addTo(Environment::expand('%shopEmail%'))
+                ->setSubject(__('New order'))
+                ->setBody(__('Hello, new order arrived'))
+                ->send();
+
+            $mail = new Mail;
+            $mail
+                ->setFrom(Environment::expand('%shopEmail%'))
+                ->addTo($data['email'])
+                ->setSubject(__('Your order at %s has been accepted', Environment::expand('%shopName%')))
+                ->setBody(str_replace('\n', "\n", __('Hello, your order has been accepted.')))
+                ->send();
+
         } catch (Exception $e) {
             dibi::rollback();
             return FALSE;

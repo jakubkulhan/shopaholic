@@ -135,9 +135,10 @@ final class Front_OrderPresenter extends Front_BasePresenter
         $data['delivery_type'] = mapper::order_delivery_types()->findById($data['delivery_type']);
         $data['payment_type'] = mapper::order_payment_types()->findById($data['payment_type']);
         $data['status'] = mapper::order_statuses()->findInitial();
+
         $new = new order($data);
-        if (mapper::orders()->save($new, $order->products)) {
-            unset($order->products, $order->data);
+        if (mapper::orders()->save($new, $order->products, $order->visited)) {
+            unset($order->products, $order->data, $order->visited);
             $this->template->ok = TRUE;
         } else {
             $this->template->ok = FALSE;

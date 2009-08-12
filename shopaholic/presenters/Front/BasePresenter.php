@@ -7,6 +7,11 @@ abstract class Front_BasePresenter extends /*Nette\Application\*/Presenter
         mapper::manufacturers()->findAll();
         mapper::categories()->findMain();
         mapper::pages()->findNotRef();
+
+        // visited products
+        if (!isset(Environment::getSession(SESSION_ORDER_NS)->visited)) {
+            Environment::getSession(SESSION_ORDER_NS)->visited = array();
+        }
     }
 
     public function beforeRender()

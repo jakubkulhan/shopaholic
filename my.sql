@@ -118,6 +118,12 @@ CREATE TABLE shopaholic_order_emails (
     body TEXT NOT NULL
 ) ENGINE=InnoDB;
 
+CREATE TABLE shopaholic_order_visited_products (
+    order_id BIGINT NOT NULL,
+    visited_at DATETIME NOT NULL,
+    product_id BIGINT NOT NULL
+) ENGINE=InnoDB;
+
 /* FOR FUTURE CASES :-)
 CREATE TABLE shopaholic_product_parameters (
     id SERIAL NOT NULL PRIMARY KEY,

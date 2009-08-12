@@ -115,6 +115,14 @@
 <div id="order-controls" class="row" style="margin-top: 20px;">
     <div class="column grid-12">
         <hr>
+        <h2>{=__('Visited products')}</h2>
+        <ul>
+        {foreach $visited_products as $_}
+            <li><a href="{link :Front:Show:,
+            $_->product->getNiceName()}">{$_->product->getName()}</a> ({$_->visited_at|date})</li>
+        {/foreach}
+        </ul>
+        <hr>
         <h2>{=__('Contacts to customer')}</h2>
         <p><strong>{=__('Phone:')}</strong> {$order->getPhone()}</p>
         <p><strong>{=__('E-mail:')}</strong> <a href="mailto:{$order->getEmail()}">{$order->getEmail()}</a></p>

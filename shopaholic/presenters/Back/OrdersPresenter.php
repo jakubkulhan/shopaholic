@@ -74,6 +74,7 @@ final class Back_OrdersPresenter extends Back_BasePresenter
             'order_id' => $this->template->order->getId()
         ));
 
+        $this->template->visited_products = mapper::orders()->findVisitedProducts($this->template->order);
         $this->template->sent_emails = mapper::order_emails()->findByOrderId($this->template->order->getId());
     }
 
