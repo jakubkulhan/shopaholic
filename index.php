@@ -11,6 +11,7 @@ define('COMMON_FILE', CONF_DIR . '/common.php');
 define('TIMEZONE_FILE', CONF_DIR . '/timezone.php');
 define('LOCALE_FILE', CONF_DIR . '/locale.php');
 define('SESSION_ORDER_NS', 'order');
+define('SESSION_SEARCH_NS', 'search');
 define('FULLTEXT_DIR', BASE_DIR . '/fulltext');
 define('ADMINLOG_DIR', BASE_DIR . '/log/admin');
 

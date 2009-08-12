@@ -27,8 +27,7 @@ final class Front_SearchPresenter extends Front_BasePresenter
             $this->template->title = __('Search results for ``%s"', $q);
             $this->template->q = $q;
 
-            $form = $this->getComponent('searchForm');
-            $form->setDefaults(array('q' => $q));
+            Environment::getSession(SESSION_SEARCH_NS)->last = $q;
 
         } catch (Exception $e) {
             $this->template->products = array();

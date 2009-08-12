@@ -45,7 +45,12 @@ abstract class Front_BasePresenter extends /*Nette\Application\*/Presenter
                     }');
                 $form->setAction($this->link('Search:default'));
                 $form->setMethod('get');
-                $form->setDefaults(array('q' => __('Input search keywords')));
+
+                if (isset(Environment::getSession(SESSION_SEARCH_NS)->last)) {
+                    $form->setDefaults(array('q' => Environment::getSession(SESSION_SEARCH_NS)->last));
+                } else {
+                    $form->setDefaults(array('q' => __('Input search keywords')));
+                }
             break;
 
             default:
