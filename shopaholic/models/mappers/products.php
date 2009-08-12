@@ -202,7 +202,6 @@ final class products extends mapper
             $ret = $this->poolResults(dibi::query($query));
             return $ret;
         } catch (Exception $e) {
-            var_dump($e->getMessage());
             return array();
         }
     }
@@ -299,7 +298,6 @@ final class products extends mapper
             return dibi::query($query)->fetchSingle();
 
         } catch (Exception $e) {
-            var_dump($e);
             return NULL;
         }
     }
@@ -329,7 +327,6 @@ final class products extends mapper
             return dibi::query($query)->fetchSingle();
 
         } catch (Exception $e) {
-            var_dump($e);
             return NULL;
         }
     }
@@ -566,8 +563,6 @@ final class products extends mapper
             return TRUE;
 
         } catch (Exception $e) {
-            var_dump($e);
-            exit();
             dibi::rollback();
             return FALSE;
         }
