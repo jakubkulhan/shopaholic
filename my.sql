@@ -28,7 +28,7 @@ CREATE TABLE shopaholic_actualities (
 CREATE TABLE shopaholic_product_availabilities (
     id SERIAL NOT NULL PRIMARY KEY,
     name VARCHAR(128) NOT NULL
-);
+) ENGINE=InnoDB;
 
 CREATE TABLE shopaholic_products (
     id SERIAL NOT NULL PRIMARY KEY,
@@ -109,6 +109,13 @@ CREATE TABLE shopaholic_order_statuses (
     name VARCHAR(256) NOT NULL,
     initial BOOLEAN NOT NULL DEFAULT FALSE,
     INDEX (initial)
+) ENGINE=InnoDB;
+
+CREATE TABLE shopaholic_order_emails (
+    order_id BIGINT NOT NULL,
+    sent_at DATETIME NOT NULL,
+    subject VARCHAR(512) NOT NULL,
+    body TEXT NOT NULL
 ) ENGINE=InnoDB;
 
 /* FOR FUTURE CASES :-)

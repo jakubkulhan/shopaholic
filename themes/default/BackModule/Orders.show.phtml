@@ -129,5 +129,13 @@
         <hr>
         <h2>{=__('Send e-mail')}</h2>
         {!$send_mail_form}
+        {if !empty($sent_emails)}
+        <hr>
+        <h2>{=__('Sent e-mails')}</h2>
+        {foreach $sent_emails as $_}
+        <h3>{$_->getSubject()} ({=$_->getSentAt()|date})</h3>
+        {!$_->getBody()}
+        {/foreach}
+        {/if}
     </div>
 </div>

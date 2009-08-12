@@ -108,6 +108,14 @@ abstract class mapper extends /*Nette\*/Object
         return self::object('order_delivery_types');
     }
 
+    /**
+     * order_emails mapper
+     * @return order_emails
+     */
+    public static function order_emails()
+    {
+        return self::object('order_emails');
+    }
 
     /**
      * order_payment_types mapper

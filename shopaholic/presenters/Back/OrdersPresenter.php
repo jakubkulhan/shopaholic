@@ -70,8 +70,11 @@ final class Back_OrdersPresenter extends Back_BasePresenter
 
         $this->template->send_mail_form = $this->getComponent('sendMailForm');
         $this->template->send_mail_form->setDefaults(array(
-            'to' => $this->template->order->getEmail()
+            'to' => $this->template->order->getEmail(),
+            'order_id' => $this->template->order->getId()
         ));
+
+        $this->template->sent_emails = mapper::order_emails()->findByOrderId($this->template->order->getId());
     }
 
     public function renderManageStatuses()
@@ -237,6 +240,7 @@ final class Back_OrdersPresenter extends Back_BasePresenter
                     ->addRule(Form::FILLED, __('You have to entry text.'));
                 $form->addSubmit('ok', '✔ ' . __('Send'));
                 $form->onSubmit[] = array($this, 'onSendMailFormSubmit');
+                $form->addHidden('order_id');
             break;
 
             default:
@@ -358,12 +362,21 @@ final class Back_OrdersPresenter extends Back_BasePresenter
         }
 
         try {
+            mapper::order_emails()->insertOne(array(
+                'order_id' => $form['order_id']->getValue(),
+                'subject' => $form['subject']->getValue(),
+                'body' => $form['body']->getValue()
+            ));
+
             $mail = new Mail;
             $mail->setFrom(Environment::expand('%shopName% <%shopEmail%>'))
                 ->addTo($form['to']->getValue())
                 ->setSubject($form['subject']->getValue())
                 ->setBody($form['body']->getValue())
                 ->send();
+
+            adminlog::log(__('Sent e-mail to "%s" with subject "%s"'), $form['to']->getValue(), $form['subject']->getValue());
+
             $this->redirect('this');
             $this->terminate();
         } catch (Exception $e) {
