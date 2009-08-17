@@ -363,6 +363,7 @@ final class Back_OrdersPresenter extends Back_BasePresenter
         }
 
         try {
+            dibi::begin();
             mapper::order_emails()->insertOne(array(
                 'order_id' => $form['order_id']->getValue(),
                 'subject' => $form['subject']->getValue(),
@@ -380,7 +381,13 @@ final class Back_OrdersPresenter extends Back_BasePresenter
 
             $this->redirect('this');
             $this->terminate();
+            
+        } catch (RedirectingException $e) {
+            dibi::commit();
+            throw $e;
+
         } catch (Exception $e) {
+            dibi::rollback();
             $form->addError(__('Cannot send e-mail.'));
         }
     }
