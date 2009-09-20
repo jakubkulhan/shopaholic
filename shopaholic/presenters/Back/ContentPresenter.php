@@ -735,6 +735,7 @@ final class Back_ContentPresenter extends Back_BasePresenter
 
         // save big picture
         $big_filename = String::webalize($form['rename']->getValue());
+        $need_resave = TRUE;
         if (empty($big_filename)) {
             $big_filename = $file->getName();
         }
